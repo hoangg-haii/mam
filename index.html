@@ -6,160 +6,117 @@
     <title>Điều khiển Dải phân cách ESP32</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .control-btn {
-            transition: all 0.2s;
-            user-select: none;
-            touch-action: manipulation;
-        }
-        .control-btn:active {
-            transform: scale(0.95);
-            filter: brightness(0.8);
-        }
-        .status-dot {
-            height: 12px;
-            width: 12px;
-            border-radius: 50%;
-            display: inline-block;
-        }
+        .control-btn { transition: all 0.2s; user-select: none; touch-action: manipulation; }
+        .control-btn:active { transform: scale(0.95); filter: brightness(0.8); }
+        .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
 
-    <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
-        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">ĐIỀU KHIỂN ESP32</h1>
+    <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md border border-gray-200">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-2 uppercase">Điều khiển ESP32</h1>
+        <p class="text-xs text-center text-gray-500 mb-6 italic">Mô hình dải phân cách tự động</p>
 
-        <!-- Trạng thái kết nối -->
-        <div class="flex items-center justify-between bg-gray-50 p-4 rounded-xl mb-6">
+        <!-- FIX LỖI POPUP -->
+        <div class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl text-xs">
+            <p class="font-bold text-orange-800 mb-2">⚠️ KHÔNG THẤY POPUP KẾT NỐI?</p>
+            <div class="space-y-2">
+                <button onclick="openInNewTab()" class="w-full bg-orange-600 text-white py-2 rounded-lg font-bold shadow">MỞ TRONG TAB RIÊNG</button>
+                <button onclick="downloadApp()" class="w-full bg-white border border-orange-600 text-orange-600 py-2 rounded-lg font-bold">TẢI FILE .HTML VỀ MÁY</button>
+            </div>
+        </div>
+
+        <!-- Trạng thái -->
+        <div class="flex items-center justify-between bg-gray-50 p-4 rounded-xl mb-6 shadow-inner">
             <div>
                 <span id="status-text" class="text-gray-600 font-medium">Chưa kết nối</span>
-                <div id="status-indicator" class="status-dot bg-red-500 ml-2"></div>
+                <div id="status-indicator" class="status-dot bg-red-500 ml-2 animate-pulse"></div>
             </div>
-            <button id="connect-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold control-btn">
-                Kết nối
-            </button>
+            <button id="connect-btn" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-bold shadow-md control-btn">Kết nối</button>
         </div>
 
-        <!-- Hiển thị thời gian từ RTC -->
-        <div class="text-center mb-6">
-            <p class="text-sm text-gray-500 uppercase tracking-widest">Thời gian thực (RTC)</p>
-            <div id="rtc-display" class="text-4xl font-mono font-bold text-blue-600">--:--:--</div>
+        <!-- RTC Display -->
+        <div class="text-center mb-6 bg-slate-800 p-5 rounded-2xl shadow-lg border-b-4 border-slate-900">
+            <p class="text-xs text-slate-400 uppercase font-bold mb-1">Thời gian từ ESP32</p>
+            <div id="rtc-display" class="text-5xl font-mono font-bold text-green-400 tracking-tighter">--:--:--</div>
         </div>
 
-        <!-- Bảng điều khiển Motor -->
+        <!-- Controls -->
         <div class="grid grid-cols-3 gap-4 mb-8">
             <div></div>
-            <button onclick="sendCmd('t')" class="bg-gray-800 text-white p-4 rounded-xl flex justify-center control-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
-            </button>
+            <button onclick="sendCmd('t')" class="bg-slate-700 text-white p-5 rounded-2xl flex justify-center control-btn shadow-lg"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m18 15-6-6-6 6"/></svg></button>
             <div></div>
-
-            <button onclick="sendCmd('1')" class="bg-gray-200 p-4 rounded-xl font-bold control-btn">L1</button>
-            <button onclick="sendCmd('d')" class="bg-red-500 text-white p-4 rounded-xl font-bold control-btn">STOP</button>
-            <button onclick="sendCmd('3')" class="bg-gray-200 p-4 rounded-xl font-bold control-btn">R1</button>
-
-            <button onclick="sendCmd('2')" class="bg-gray-200 p-4 rounded-xl font-bold control-btn">L2</button>
-            <button onclick="sendCmd('l')" class="bg-gray-800 text-white p-4 rounded-xl flex justify-center control-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-            </button>
-            <button onclick="sendCmd('4')" class="bg-gray-200 p-4 rounded-xl font-bold control-btn">R2</button>
+            <button onclick="sendCmd('1')" class="bg-white border-2 p-4 rounded-xl font-black text-slate-700 control-btn shadow-sm">L1</button>
+            <button onclick="sendCmd('d')" class="bg-red-500 text-white p-4 rounded-xl font-black control-btn shadow-lg">STOP</button>
+            <button onclick="sendCmd('3')" class="bg-white border-2 p-4 rounded-xl font-black text-slate-700 control-btn shadow-sm">R1</button>
+            <button onclick="sendCmd('2')" class="bg-white border-2 p-4 rounded-xl font-black text-slate-700 control-btn shadow-sm">L2</button>
+            <button onclick="sendCmd('l')" class="bg-slate-700 text-white p-5 rounded-2xl flex justify-center control-btn shadow-lg"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg></button>
+            <button onclick="sendCmd('4')" class="bg-white border-2 p-4 rounded-xl font-black text-slate-700 control-btn shadow-sm">R2</button>
         </div>
 
-        <!-- Hẹn giờ -->
-        <div class="border-t pt-6">
-            <h2 class="text-lg font-semibold mb-4 text-gray-700">Hẹn giờ tự động</h2>
+        <!-- Alarm -->
+        <div class="border-t border-dashed pt-6">
+            <h2 class="text-sm font-bold mb-4 text-gray-500 uppercase">Hẹn giờ mở dải phân cách</h2>
             <div class="flex gap-2">
-                <input type="time" id="alarm-time" class="flex-1 border rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <button onclick="setAlarm()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold control-btn">
-                    ĐẶT
-                </button>
+                <input type="time" id="alarm-time" class="flex-1 border-2 rounded-xl p-3 text-xl font-bold">
+                <button onclick="setAlarm()" class="bg-green-600 text-white px-6 py-2 rounded-xl font-bold control-btn shadow-md">ĐẶT</button>
             </div>
-            <p id="alarm-status" class="text-sm text-gray-500 mt-2 italic text-center"></p>
+            <p id="alarm-status" class="text-xs text-gray-400 mt-3 italic text-center"></p>
         </div>
     </div>
 
     <script>
-        // Cấu hình UUID (Phải khớp với ESP32)
         const SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
         const CHARACTERISTIC_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
+        let device, characteristic;
 
-        let device, server, characteristic;
-
-        const connectBtn = document.getElementById('connect-btn');
-        const statusText = document.getElementById('status-text');
-        const statusIndicator = document.getElementById('status-indicator');
-        const rtcDisplay = document.getElementById('rtc-display');
-
-        connectBtn.addEventListener('click', async () => {
-            try {
-                statusText.innerText = "Đang tìm...";
-                device = await navigator.bluetooth.requestDevice({
-                    filters: [{ name: 'ESP32_Motor_Control' }],
-                    optionalServices: [SERVICE_UUID]
-                });
-
-                statusText.innerText = "Đang kết nối...";
-                server = await device.gatt.connect();
-                const service = await server.getPrimaryService(SERVICE_UUID);
-                characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
-
-                // Lắng nghe dữ liệu gửi từ ESP32 (Thời gian RTC)
-                await characteristic.startNotifications();
-                characteristic.addEventListener('characteristicvaluechanged', (event) => {
-                    const value = new TextDecoder().decode(event.target.value);
-                    if (value.startsWith("TIME:")) {
-                        rtcDisplay.innerText = value.replace("TIME:", "");
-                    }
-                });
-
-                updateUI(true);
-                device.addEventListener('gattserverdisconnected', onDisconnected);
-            } catch (error) {
-                console.error(error);
-                statusText.innerText = "Lỗi kết nối";
-                updateUI(false);
-            }
-        });
-
-        function onDisconnected() {
-            statusText.innerText = "Đã ngắt kết nối";
-            updateUI(false);
+        function openInNewTab() {
+            const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
+            window.open(URL.createObjectURL(blob), '_blank');
         }
 
-        function updateUI(connected) {
-            if (connected) {
-                statusText.innerText = "Đã kết nối";
-                statusIndicator.classList.remove('bg-red-500');
-                statusIndicator.classList.add('bg-green-500');
-                connectBtn.innerText = "Ngắt";
-                connectBtn.classList.replace('bg-blue-600', 'bg-red-600');
-            } else {
-                statusIndicator.classList.remove('bg-green-500');
-                statusIndicator.classList.add('bg-red-500');
-                connectBtn.innerText = "Kết nối";
-                connectBtn.classList.replace('bg-red-600', 'bg-blue-600');
-                rtcDisplay.innerText = "--:--:--";
-            }
+        function downloadApp() {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([document.documentElement.outerHTML], {type: 'text/html'}));
+            a.download = "ESP32_Controller.html";
+            a.click();
+        }
+
+        document.getElementById('connect-btn').addEventListener('click', async () => {
+            try {
+                device = await navigator.bluetooth.requestDevice({ filters: [{ name: 'ESP32_Motor_Control' }], optionalServices: [SERVICE_UUID] });
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService(SERVICE_UUID);
+                characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+                await characteristic.startNotifications();
+                characteristic.addEventListener('characteristicvaluechanged', (e) => {
+                    const v = new TextDecoder().decode(e.target.value);
+                    if (v.startsWith("TIME:")) document.getElementById('rtc-display').innerText = v.replace("TIME:", "");
+                });
+                updateUI(true);
+            } catch (err) { console.error(err); updateUI(false); }
+        });
+
+        function updateUI(c) {
+            const st = document.getElementById('status-text');
+            const si = document.getElementById('status-indicator');
+            const cb = document.getElementById('connect-btn');
+            st.innerText = c ? "Đã kết nối" : "Chưa kết nối";
+            si.className = c ? "status-dot bg-green-500" : "status-dot bg-red-500 animate-pulse";
+            cb.innerText = c ? "Ngắt" : "Kết nối";
+            cb.className = c ? "bg-red-600 text-white px-5 py-2 rounded-lg font-bold" : "bg-blue-600 text-white px-5 py-2 rounded-lg font-bold";
         }
 
         async function sendCmd(cmd) {
             if (!characteristic) return;
-            try {
-                const data = new TextEncoder().encode(cmd + "\n");
-                await characteristic.writeValue(data);
-                console.log("Sent: " + cmd);
-            } catch (error) {
-                console.error("Gửi lệnh lỗi:", error);
-            }
+            await characteristic.writeValue(new TextEncoder().encode(cmd + "\n"));
         }
 
         function setAlarm() {
-            const timeVal = document.getElementById('alarm-time').value; // HH:mm
-            if (!timeVal) return;
-            
-            // Format HH:mm thành HHmmss (ví dụ 08:30 -> 083000)
-            const formattedTime = timeVal.replace(":", "") + "00";
-            sendCmd(formattedTime);
-            document.getElementById('alarm-status').innerText = "Đã gửi hẹn giờ: " + timeVal;
+            const t = document.getElementById('alarm-time').value;
+            if (!t) return;
+            sendCmd(t.replace(":", "") + "00");
+            document.getElementById('alarm-status').innerText = "Đã gửi lệnh hẹn giờ: " + t;
         }
     </script>
 </body>
