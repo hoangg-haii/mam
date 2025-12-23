@@ -26,66 +26,50 @@
 <body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
 
     <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
-        <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">ĐIỀU KHIỂN ESP32</h1>
-        <p class="text-xs text-center text-gray-500 mb-6 font-medium italic">Dành cho: Mô hình dải phân cách tự động</p>
-
-        <!-- Nút khắc phục lỗi bảo mật -->
-        <div id="setup-guide" class="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-800">
-            <p class="font-bold mb-1">⚠️ Lưu ý bảo mật:</p>
-            <p class="mb-2">Trình duyệt chỉ cho phép Bluetooth khi chạy ở Tab riêng biệt (không chạy trong khung Preview).</p>
-            <button onclick="openInNewTab()" class="w-full bg-yellow-600 text-white py-2 rounded font-bold hover:bg-yellow-700 transition">
-                MỞ TRONG TAB MỚI ĐỂ KẾT NỐI
-            </button>
-        </div>
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">ĐIỀU KHIỂN ESP32</h1>
 
         <!-- Trạng thái kết nối -->
-        <div class="flex items-center justify-between bg-gray-50 p-4 rounded-xl mb-6 border border-gray-100">
+        <div class="flex items-center justify-between bg-gray-50 p-4 rounded-xl mb-6">
             <div>
                 <span id="status-text" class="text-gray-600 font-medium">Chưa kết nối</span>
                 <div id="status-indicator" class="status-dot bg-red-500 ml-2"></div>
             </div>
-            <button id="connect-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold control-btn shadow-md">
+            <button id="connect-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold control-btn">
                 Kết nối
             </button>
         </div>
 
-        <!-- Thông báo lỗi -->
-        <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 text-sm" role="alert">
-            <strong class="font-bold">Lỗi!</strong>
-            <span id="error-detail" class="block sm:inline"> Trình duyệt chặn Bluetooth hoặc thiết bị không hỗ trợ.</span>
-        </div>
-
         <!-- Hiển thị thời gian từ RTC -->
-        <div class="text-center mb-6 bg-blue-50 p-4 rounded-2xl">
-            <p class="text-xs text-blue-500 uppercase font-bold tracking-widest mb-1">Thời gian thực (RTC)</p>
-            <div id="rtc-display" class="text-4xl font-mono font-bold text-blue-700">--:--:--</div>
+        <div class="text-center mb-6">
+            <p class="text-sm text-gray-500 uppercase tracking-widest">Thời gian thực (RTC)</p>
+            <div id="rtc-display" class="text-4xl font-mono font-bold text-blue-600">--:--:--</div>
         </div>
 
         <!-- Bảng điều khiển Motor -->
         <div class="grid grid-cols-3 gap-4 mb-8">
             <div></div>
-            <button onclick="sendCmd('t')" class="bg-gray-800 text-white p-4 rounded-xl flex justify-center control-btn shadow-lg">
+            <button onclick="sendCmd('t')" class="bg-gray-800 text-white p-4 rounded-xl flex justify-center control-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
             </button>
             <div></div>
 
-            <button onclick="sendCmd('1')" class="bg-white border-2 border-gray-200 p-4 rounded-xl font-bold text-gray-700 control-btn shadow-sm">L1</button>
-            <button onclick="sendCmd('d')" class="bg-red-600 text-white p-4 rounded-xl font-bold control-btn shadow-lg">STOP</button>
-            <button onclick="sendCmd('3')" class="bg-white border-2 border-gray-200 p-4 rounded-xl font-bold text-gray-700 control-btn shadow-sm">R1</button>
+            <button onclick="sendCmd('1')" class="bg-gray-200 p-4 rounded-xl font-bold control-btn">L1</button>
+            <button onclick="sendCmd('d')" class="bg-red-500 text-white p-4 rounded-xl font-bold control-btn">STOP</button>
+            <button onclick="sendCmd('3')" class="bg-gray-200 p-4 rounded-xl font-bold control-btn">R1</button>
 
-            <button onclick="sendCmd('2')" class="bg-white border-2 border-gray-200 p-4 rounded-xl font-bold text-gray-700 control-btn shadow-sm">L2</button>
-            <button onclick="sendCmd('l')" class="bg-gray-800 text-white p-4 rounded-xl flex justify-center control-btn shadow-lg">
+            <button onclick="sendCmd('2')" class="bg-gray-200 p-4 rounded-xl font-bold control-btn">L2</button>
+            <button onclick="sendCmd('l')" class="bg-gray-800 text-white p-4 rounded-xl flex justify-center control-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </button>
-            <button onclick="sendCmd('4')" class="bg-white border-2 border-gray-200 p-4 rounded-xl font-bold text-gray-700 control-btn shadow-sm">R2</button>
+            <button onclick="sendCmd('4')" class="bg-gray-200 p-4 rounded-xl font-bold control-btn">R2</button>
         </div>
 
         <!-- Hẹn giờ -->
         <div class="border-t pt-6">
             <h2 class="text-lg font-semibold mb-4 text-gray-700">Hẹn giờ tự động</h2>
             <div class="flex gap-2">
-                <input type="time" id="alarm-time" class="flex-1 border-2 border-gray-200 rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <button onclick="setAlarm()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold control-btn shadow-md">
+                <input type="time" id="alarm-time" class="flex-1 border rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button onclick="setAlarm()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold control-btn">
                     ĐẶT
                 </button>
             </div>
@@ -94,6 +78,7 @@
     </div>
 
     <script>
+        // Cấu hình UUID (Phải khớp với ESP32)
         const SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
         const CHARACTERISTIC_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
 
@@ -103,24 +88,9 @@
         const statusText = document.getElementById('status-text');
         const statusIndicator = document.getElementById('status-indicator');
         const rtcDisplay = document.getElementById('rtc-display');
-        const errorMsg = document.getElementById('error-message');
-        const errorDetail = document.getElementById('error-detail');
-
-        // Hàm giúp chạy code ở Tab mới để tránh lỗi Iframe Security
-        function openInNewTab() {
-            const htmlContent = document.documentElement.outerHTML;
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            window.open(url, '_blank');
-        }
 
         connectBtn.addEventListener('click', async () => {
-            errorMsg.classList.add('hidden');
             try {
-                if (!navigator.bluetooth) {
-                    throw new Error("Trình duyệt không hỗ trợ Web Bluetooth.");
-                }
-
                 statusText.innerText = "Đang tìm...";
                 device = await navigator.bluetooth.requestDevice({
                     filters: [{ name: 'ESP32_Motor_Control' }],
@@ -132,6 +102,7 @@
                 const service = await server.getPrimaryService(SERVICE_UUID);
                 characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
 
+                // Lắng nghe dữ liệu gửi từ ESP32 (Thời gian RTC)
                 await characteristic.startNotifications();
                 characteristic.addEventListener('characteristicvaluechanged', (event) => {
                     const value = new TextDecoder().decode(event.target.value);
@@ -144,8 +115,6 @@
                 device.addEventListener('gattserverdisconnected', onDisconnected);
             } catch (error) {
                 console.error(error);
-                errorMsg.classList.remove('hidden');
-                errorDetail.innerText = error.message || "Lỗi không xác định";
                 statusText.innerText = "Lỗi kết nối";
                 updateUI(false);
             }
@@ -177,14 +146,17 @@
             try {
                 const data = new TextEncoder().encode(cmd + "\n");
                 await characteristic.writeValue(data);
+                console.log("Sent: " + cmd);
             } catch (error) {
                 console.error("Gửi lệnh lỗi:", error);
             }
         }
 
         function setAlarm() {
-            const timeVal = document.getElementById('alarm-time').value;
+            const timeVal = document.getElementById('alarm-time').value; // HH:mm
             if (!timeVal) return;
+            
+            // Format HH:mm thành HHmmss (ví dụ 08:30 -> 083000)
             const formattedTime = timeVal.replace(":", "") + "00";
             sendCmd(formattedTime);
             document.getElementById('alarm-status').innerText = "Đã gửi hẹn giờ: " + timeVal;
