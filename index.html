@@ -40,7 +40,7 @@
             <div id="rtc-display" class="text-5xl font-mono font-bold text-green-400 tracking-tighter drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">--:--:--</div>
         </div>
 
-        <!-- Bảng điều khiển (Nhấn-Nhả, Không có nút STOP) -->
+        <!-- Bảng điều khiển (Nhấn-Nhả) -->
         <div class="grid grid-cols-3 gap-5 mb-8">
             <!-- Row 1 -->
             <div></div>
@@ -76,7 +76,7 @@
             <p id="alarm-status" class="text-[10px] text-indigo-500 mt-3 font-bold italic text-center min-h-[1.2em] uppercase"></p>
         </div>
 
-        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.0 • Momentary Logic</p>
+        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.1 • Stable Connect</p>
     </div>
 
     <script>
@@ -85,6 +85,7 @@
         
         let device, characteristic;
         let isSending = false;
+        let sendQueue = [];
 
         // Cấu hình nhấn nhả
         const buttons = document.querySelectorAll('.momentary-btn');
@@ -107,22 +108,17 @@
                 }
             };
 
-            // Touch events
             btn.addEventListener('touchstart', startAction, {passive: false});
             btn.addEventListener('touchend', stopAction, {passive: false});
             btn.addEventListener('touchcancel', stopAction, {passive: false});
-
-            // Mouse events
             btn.addEventListener('mousedown', startAction);
             btn.addEventListener('mouseup', stopAction);
             btn.addEventListener('mouseleave', stopAction);
         });
 
-        // Kết nối Bluetooth
         document.getElementById('connect-btn').addEventListener('click', async () => {
             if (device && device.gatt.connected) {
                 await device.gatt.disconnect();
-                updateUI(false);
                 return;
             }
 
@@ -144,13 +140,19 @@
                     }
                 });
 
-                device.addEventListener('gattserverdisconnected', () => updateUI(false));
+                device.addEventListener('gattserverdisconnected', onDisconnected);
                 updateUI(true);
             } catch (err) {
                 console.error("Lỗi:", err);
                 updateUI(false);
             }
         });
+
+        function onDisconnected() {
+            updateUI(false);
+            characteristic = null;
+            device = null;
+        }
 
         function updateUI(connected) {
             const st = document.getElementById('status-text');
@@ -165,38 +167,57 @@
                 : "bg-blue-600 text-white px-5 py-2 rounded-xl font-bold text-sm shadow-lg";
         }
 
+        // Hàm gửi lệnh tối ưu hóa để tránh rớt kết nối
         async function sendCmd(cmd) {
-            if (!characteristic || isSending) return;
+            if (!characteristic) return;
+
+            // Chế độ "Lock" để tránh ghi đè lệnh khi Bluetooth đang bận
+            if (isSending) {
+                // Nếu đang bận, chỉ giữ lại lệnh cuối cùng trong hàng đợi (thường là lệnh Stop 'd')
+                sendQueue = [cmd]; 
+                return;
+            }
 
             try {
                 isSending = true;
                 const data = new TextEncoder().encode(cmd + "\n");
-                await characteristic.writeValue(data);
+                
+                // Sử dụng writeValueWithoutResponse nếu thiết bị hỗ trợ để nhanh hơn và ổn định hơn
+                try {
+                    await characteristic.writeValueWithoutResponse(data);
+                } catch (e) {
+                    await characteristic.writeValue(data);
+                }
             } catch (err) {
                 console.warn("Lỗi truyền tin:", err);
+                // Nếu lỗi do thiết bị mất kết nối, cập nhật UI
+                if (!device || !device.gatt.connected) onDisconnected();
             } finally {
-                setTimeout(() => { isSending = false; }, 40); 
+                // Nghỉ 50ms giữa các lần gửi lệnh để ESP32 kịp xử lý Serial
+                setTimeout(async () => {
+                    isSending = false;
+                    if (sendQueue.length > 0) {
+                        const nextCmd = sendQueue.shift();
+                        sendCmd(nextCmd);
+                    }
+                }, 50); 
             }
         }
 
         function setAlarm() {
-            const timeVal = document.getElementById('alarm-time').value; // Định dạng từ input thường là HH:mm hoặc HH:mm:ss
+            const timeVal = document.getElementById('alarm-time').value;
             if (!timeVal) return;
             
-            // Xử lý chuỗi để đảm bảo định dạng hhmmss
             const parts = timeVal.split(':');
             let hh = parts[0].padStart(2, '0');
             let mm = parts[1].padStart(2, '0');
             let ss = (parts[2] || "00").padStart(2, '0');
             
             const formattedTime = hh + mm + ss;
-
-            // Gửi lệnh định dạng A + hhmmss (Ví dụ: A083000)
             sendCmd("A" + formattedTime); 
             
             const statusEl = document.getElementById('alarm-status');
             statusEl.innerText = "ĐÃ GỬI LỊCH: " + hh + ":" + mm + ":" + ss;
-            
             setTimeout(() => { statusEl.innerText = ""; }, 4000);
         }
     </script>
