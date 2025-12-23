@@ -10,70 +10,73 @@
             transition: all 0.1s; 
             user-select: none; 
             -webkit-user-select: none;
-            touch-action: none; /* Quan trọng để tránh scroll khi đang nhấn giữ */
+            touch-action: none; 
         }
         .control-btn:active { transform: scale(0.92); filter: brightness(0.7); }
         .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; }
-        .btn-pressed { background-color: #1e293b !important; color: white !important; } /* Slate-800 */
+        .btn-pressed { background-color: #1e293b !important; color: white !important; border-color: #1e293b !important; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4 font-sans">
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4 font-sans text-slate-800">
 
-    <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-md border border-gray-200">
+    <div class="bg-white p-6 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-gray-200">
         <h1 class="text-2xl font-black text-center text-slate-800 mb-1 uppercase tracking-tight">ESP32 Controller</h1>
         <p class="text-[10px] text-center text-gray-400 mb-6 font-bold tracking-widest uppercase">Hệ thống dải phân cách tự động</p>
 
         <!-- Trạng thái kết nối -->
-        <div class="flex items-center justify-between bg-gray-50 p-4 rounded-2xl mb-6 shadow-inner border border-gray-100">
+        <div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl mb-6 shadow-inner border border-slate-100">
             <div class="flex items-center">
                 <div id="status-indicator" class="status-dot bg-red-500 mr-3 animate-pulse"></div>
-                <span id="status-text" class="text-sm text-gray-600 font-bold uppercase">Chưa kết nối</span>
+                <span id="status-text" class="text-xs font-black uppercase tracking-wider text-slate-500">Chưa kết nối</span>
             </div>
-            <button id="connect-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-bold shadow-md transition-all active:scale-95">
+            <button id="connect-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-bold text-sm shadow-lg transition-all active:scale-95">
                 KẾT NỐI
             </button>
         </div>
 
         <!-- RTC Display -->
-        <div class="text-center mb-6 bg-slate-900 p-6 rounded-3xl shadow-xl border-b-4 border-slate-950">
+        <div class="text-center mb-6 bg-slate-900 p-6 rounded-[2rem] shadow-xl border-b-4 border-slate-950">
             <p class="text-[10px] text-slate-500 uppercase font-black mb-2 tracking-widest">Thời gian hệ thống</p>
             <div id="rtc-display" class="text-5xl font-mono font-bold text-green-400 tracking-tighter drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">--:--:--</div>
         </div>
 
-        <!-- Bảng điều khiển Nhấn-Nhả -->
-        <div class="grid grid-cols-3 gap-4 mb-8">
+        <!-- Bảng điều khiển (Nhấn-Nhả, Không có nút STOP) -->
+        <div class="grid grid-cols-3 gap-5 mb-8">
             <!-- Row 1 -->
             <div></div>
-            <button data-cmd="t" class="momentary-btn bg-slate-200 text-slate-700 p-6 rounded-2xl flex justify-center shadow-md border-b-4 border-slate-300">
+            <button data-cmd="t" class="momentary-btn bg-slate-100 text-slate-700 p-8 rounded-3xl flex justify-center shadow-md border-b-4 border-slate-300 active:border-b-0 active:translate-y-1">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m18 15-6-6-6 6"/></svg>
             </button>
             <div></div>
 
             <!-- Row 2 -->
-            <button data-cmd="1" class="momentary-btn bg-white border-2 border-gray-200 p-5 rounded-2xl font-black text-xl text-slate-700 shadow-sm">L1</button>
-            <button id="stop-btn" onclick="sendCmd('d')" class="bg-red-500 text-white p-5 rounded-2xl font-black text-xl shadow-lg border-b-4 border-red-700 active:border-b-0">STOP</button>
-            <button data-cmd="3" class="momentary-btn bg-white border-2 border-gray-200 p-5 rounded-2xl font-black text-xl text-slate-700 shadow-sm">R1</button>
+            <button data-cmd="1" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">L1</button>
+            <div class="flex items-center justify-center">
+                <div class="w-3 h-3 bg-slate-200 rounded-full"></div>
+            </div>
+            <button data-cmd="3" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">R1</button>
 
             <!-- Row 3 -->
-            <button data-cmd="2" class="momentary-btn bg-white border-2 border-gray-200 p-5 rounded-2xl font-black text-xl text-slate-700 shadow-sm">L2</button>
-            <button data-cmd="l" class="momentary-btn bg-slate-200 text-slate-700 p-6 rounded-2xl flex justify-center shadow-md border-b-4 border-slate-300">
+            <button data-cmd="2" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">L2</button>
+            <button data-cmd="l" class="momentary-btn bg-slate-100 text-slate-700 p-8 rounded-3xl flex justify-center shadow-md border-b-4 border-slate-300 active:border-b-0 active:translate-y-1">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m6 9 6 6 6-6"/></svg>
             </button>
-            <button data-cmd="4" class="momentary-btn bg-white border-2 border-gray-200 p-5 rounded-2xl font-black text-xl text-slate-700 shadow-sm">R2</button>
+            <button data-cmd="4" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">R2</button>
         </div>
 
         <!-- Hẹn giờ -->
-        <div class="bg-orange-50 p-5 rounded-3xl border border-orange-100">
-            <h2 class="text-[10px] font-black mb-3 text-orange-800 uppercase tracking-[0.2em]">Lập lịch tự động (HHMMSS)</h2>
-            <div class="flex gap-2">
-                <input type="time" id="alarm-time" step="1" class="flex-1 border-2 border-orange-200 rounded-2xl p-3 text-xl font-bold text-orange-900 bg-white focus:outline-none focus:border-orange-500">
-                <button onclick="setAlarm()" class="bg-orange-600 text-white px-6 py-2 rounded-2xl font-black shadow-lg hover:bg-orange-700 active:scale-95 transition-all">ĐẶT</button>
+        <div class="bg-indigo-50 p-6 rounded-[2rem] border border-indigo-100 shadow-sm">
+            <h2 class="text-[10px] font-black mb-4 text-indigo-800 uppercase tracking-[0.2em] text-center">Đặt lịch mở dải phân cách</h2>
+            <div class="flex flex-col gap-3">
+                <input type="time" id="alarm-time" step="1" class="w-full border-2 border-indigo-100 rounded-2xl p-4 text-2xl font-bold text-indigo-900 bg-white focus:outline-none focus:border-indigo-500 text-center">
+                <button onclick="setAlarm()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-indigo-700 active:scale-[0.98] transition-all">
+                    XÁC NHẬN HẸN GIỜ
+                </button>
             </div>
-            <p id="alarm-status" class="text-[10px] text-orange-600 mt-3 font-bold italic text-center"></p>
+            <p id="alarm-status" class="text-[10px] text-indigo-500 mt-3 font-bold italic text-center min-h-[1.2em] uppercase"></p>
         </div>
 
-        <!-- Debug log (Optional) -->
-        <p class="text-[9px] text-gray-300 mt-6 text-center uppercase tracking-tighter">Bluetooth LE v2.1 • Stable Transmission</p>
+        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.0 • Momentary Logic</p>
     </div>
 
     <script>
@@ -87,26 +90,32 @@
         const buttons = document.querySelectorAll('.momentary-btn');
         
         buttons.forEach(btn => {
-            // Sự kiện nhấn xuống
             const startAction = (e) => {
-                e.preventDefault();
+                if (e.cancelable) e.preventDefault();
+                if (btn.classList.contains('btn-pressed')) return;
+                
                 const cmd = btn.getAttribute('data-cmd');
                 btn.classList.add('btn-pressed');
                 sendCmd(cmd);
             };
 
-            // Sự kiện thả ra
             const stopAction = (e) => {
-                e.preventDefault();
-                btn.classList.remove('btn-pressed');
-                sendCmd('d'); // Gửi lệnh STOP khi buông tay
+                if (e.cancelable) e.preventDefault();
+                if (btn.classList.contains('btn-pressed')) {
+                    btn.classList.remove('btn-pressed');
+                    sendCmd('d'); // Tự động dừng
+                }
             };
 
-            btn.addEventListener('mousedown', startAction);
+            // Touch events
             btn.addEventListener('touchstart', startAction, {passive: false});
-            btn.addEventListener('mouseup', stopAction);
             btn.addEventListener('touchend', stopAction, {passive: false});
-            btn.addEventListener('mouseleave', stopAction); // Dừng nếu di chuột ra ngoài khi đang nhấn
+            btn.addEventListener('touchcancel', stopAction, {passive: false});
+
+            // Mouse events
+            btn.addEventListener('mousedown', startAction);
+            btn.addEventListener('mouseup', stopAction);
+            btn.addEventListener('mouseleave', stopAction);
         });
 
         // Kết nối Bluetooth
@@ -138,7 +147,7 @@
                 device.addEventListener('gattserverdisconnected', () => updateUI(false));
                 updateUI(true);
             } catch (err) {
-                console.error("Lỗi kết nối:", err);
+                console.error("Lỗi:", err);
                 updateUI(false);
             }
         });
@@ -152,42 +161,43 @@
             si.className = connected ? "status-dot bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "status-dot bg-red-500 animate-pulse";
             cb.innerText = connected ? "NGẮT" : "KẾT NỐI";
             cb.className = connected 
-                ? "bg-red-100 text-red-600 border border-red-200 px-6 py-2 rounded-xl font-bold transition-all" 
-                : "bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-md transition-all";
+                ? "bg-slate-100 text-slate-600 border border-slate-200 px-5 py-2 rounded-xl font-bold text-sm" 
+                : "bg-blue-600 text-white px-5 py-2 rounded-xl font-bold text-sm shadow-lg";
         }
 
-        // Hàm gửi lệnh tối ưu hóa
         async function sendCmd(cmd) {
             if (!characteristic || isSending) return;
 
             try {
                 isSending = true;
-                // Thêm \n để ESP32 nhận biết kết thúc chuỗi (Serial.readStringUntil('\n'))
                 const data = new TextEncoder().encode(cmd + "\n");
                 await characteristic.writeValue(data);
             } catch (err) {
-                console.warn("Gửi lệnh thất bại:", err);
+                console.warn("Lỗi truyền tin:", err);
             } finally {
-                // Giải phóng khóa sau một khoảng thời gian cực ngắn để tránh dồn ứ buffer
-                setTimeout(() => { isSending = false; }, 50); 
+                setTimeout(() => { isSending = false; }, 40); 
             }
         }
 
         function setAlarm() {
-            const t = document.getElementById('alarm-time').value; // HH:mm:ss hoặc HH:mm
-            if (!t) return;
+            const timeVal = document.getElementById('alarm-time').value; // Định dạng từ input thường là HH:mm hoặc HH:mm:ss
+            if (!timeVal) return;
             
-            // Xử lý chuỗi thời gian thành dạng HHMMSS
-            const parts = t.split(':');
-            let formattedTime = parts.join('');
-            if (parts.length === 2) formattedTime += "00"; // Thêm giây nếu input chỉ có HH:mm
+            // Xử lý chuỗi để đảm bảo định dạng hhmmss
+            const parts = timeVal.split(':');
+            let hh = parts[0].padStart(2, '0');
+            let mm = parts[1].padStart(2, '0');
+            let ss = (parts[2] || "00").padStart(2, '0');
+            
+            const formattedTime = hh + mm + ss;
 
-            sendCmd("A" + formattedTime); // Thêm tiền tố 'A' để ESP phân biệt với lệnh motor
-            document.getElementById('alarm-status').innerText = "Đã gửi lịch: " + t;
+            // Gửi lệnh định dạng A + hhmmss (Ví dụ: A083000)
+            sendCmd("A" + formattedTime); 
             
-            setTimeout(() => {
-                document.getElementById('alarm-status').innerText = "";
-            }, 3000);
+            const statusEl = document.getElementById('alarm-status');
+            statusEl.innerText = "ĐÃ GỬI LỊCH: " + hh + ":" + mm + ":" + ss;
+            
+            setTimeout(() => { statusEl.innerText = ""; }, 4000);
         }
     </script>
 </body>
