@@ -21,7 +21,7 @@
 <body class="bg-gray-100 min-h-screen flex flex-col items-center p-4 font-sans text-slate-800">
 
     <div class="bg-white p-6 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-gray-200">
-        <h1 class="text-2xl font-black text-center text-slate-800 mb-1 uppercase tracking-tight">Trình điều khiển</h1>
+        <h1 class="text-2xl font-black text-center text-slate-800 mb-1 uppercase tracking-tight">ESP32 Controller</h1>
         <p class="text-[10px] text-center text-gray-400 mb-6 font-bold tracking-widest uppercase">Hệ thống dải phân cách tự động</p>
 
         <!-- Trạng thái kết nối -->
@@ -35,9 +35,9 @@
             </button>
         </div>
 
-        <!-- RTC Display -->
+        <!-- RTC Display (Đọc trực tiếp từ điện thoại) -->
         <div class="text-center mb-6 bg-slate-900 p-6 rounded-[2rem] shadow-xl border-b-4 border-slate-950">
-            <p class="text-[10px] text-slate-500 uppercase font-black mb-2 tracking-widest">Thời gian hệ thống</p>
+            <p class="text-[10px] text-slate-500 uppercase font-black mb-2 tracking-widest">Thời gian điện thoại</p>
             <div id="rtc-display" class="text-5xl font-mono font-bold text-green-400 tracking-tighter drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">--:--:--</div>
         </div>
 
@@ -70,7 +70,7 @@
             <p id="alarm-status" class="text-[10px] text-indigo-500 mt-3 font-bold italic text-center min-h-[1.2em] uppercase"></p>
         </div>
 
-        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.5 • Real-time Auto Sync</p>
+        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.6 • Local Time Sync</p>
     </div>
 
     <script>
@@ -81,9 +81,20 @@
         let isSending = false;
         let sendQueue = [];
         let syncTimer = null;
+        let uiClockTimer = null;
 
         const buttons = document.querySelectorAll('.momentary-btn');
         
+        // Cập nhật đồng hồ hiển thị trên UI từ điện thoại liên tục
+        function updateUIClock() {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + 
+                            now.getMinutes().toString().padStart(2, '0') + ":" + 
+                            now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('rtc-display').innerText = timeStr;
+        }
+        uiClockTimer = setInterval(updateUIClock, 1000);
+
         buttons.forEach(btn => {
             const startAction = (e) => {
                 if (e.cancelable) e.preventDefault();
@@ -127,17 +138,15 @@
                 characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
 
                 await characteristic.startNotifications();
+                
+                // Vẫn lắng nghe phản hồi từ ESP nếu cần (ví dụ xác nhận nhận giờ)
                 characteristic.addEventListener('characteristicvaluechanged', (e) => {
                     const v = new TextDecoder().decode(e.target.value);
-                    if (v.startsWith("TIME:")) {
-                        document.getElementById('rtc-display').innerText = v.replace("TIME:", "").trim();
-                    }
+                    console.log("ESP Feedback:", v);
                 });
 
                 device.addEventListener('gattserverdisconnected', onDisconnected);
                 updateUI(true);
-
-                // Bắt đầu chu kỳ đồng bộ thời gian chạy nền
                 startBackgroundSync();
 
             } catch (err) {
@@ -153,7 +162,6 @@
             stopBackgroundSync();
         }
 
-        // Hàm gửi thời gian thực xuống ESP
         function syncTimeNow() {
             if (!characteristic || !device || !device.gatt.connected) return;
             
@@ -162,17 +170,15 @@
             const mm = String(now.getMinutes()).padStart(2, '0');
             const ss = String(now.getSeconds()).padStart(2, '0');
             
-            // Gửi lệnh đồng bộ với tiền tố 'S' (VD: S123045)
-            // Lệnh này không can thiệp vào hàng đợi lệnh vận hành để ưu tiên phản hồi nút bấm
+            // Lệnh S + HHMMSS để ESP32 cập nhật RTC từ điện thoại
             const syncCmd = `S${hh}${mm}${ss}`;
-            sendCmd(syncCmd, true); // true = priority/silent
+            sendCmd(syncCmd, true); 
         }
 
         function startBackgroundSync() {
             stopBackgroundSync();
-            // Đồng bộ ngay lập tức khi kết nối
             syncTimeNow();
-            // Cập nhật mỗi 30 giây để đảm bảo chính xác tuyệt đối
+            // Đồng bộ liên tục mỗi 30s để bù trừ sai lệch thạch anh trên ESP
             syncTimer = setInterval(syncTimeNow, 30000);
         }
 
@@ -199,7 +205,6 @@
         async function sendCmd(cmd, isPriority = false) {
             if (!characteristic) return;
 
-            // Nếu không phải ưu tiên và đang bận, cho vào hàng đợi
             if (isSending && !isPriority) {
                 sendQueue = [cmd]; 
                 return;
@@ -218,7 +223,6 @@
                 console.warn("Lỗi truyền tin:", err);
                 if (!device || !device.gatt.connected) onDisconnected();
             } finally {
-                // Nghỉ 60ms để ESP xử lý Serial buffer
                 setTimeout(async () => {
                     isSending = false;
                     if (sendQueue.length > 0) {
@@ -247,6 +251,4 @@
         }
     </script>
 </body>
-
 </html>
-
