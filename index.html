@@ -2,27 +2,44 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Điều khiển Dải phân cách ESP32</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Chống bôi đen toàn bộ ứng dụng */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
         .control-btn { 
             transition: all 0.1s; 
             user-select: none; 
             -webkit-user-select: none;
             touch-action: none; 
         }
+        
         .control-btn:active { transform: scale(0.92); filter: brightness(0.7); }
         .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; }
         .btn-pressed { background-color: #1e293b !important; color: white !important; border-color: #1e293b !important; }
         .direction-selected { background-color: #4f46e5 !important; color: white !important; border-color: #4338ca !important; }
+        
+        /* Đảm bảo các input vẫn có thể chọn được */
+        input {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
         * { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center p-4 font-sans text-slate-800">
 
     <div class="bg-white p-6 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-gray-200">
-        <h1 class="text-2xl font-black text-center text-slate-800 mb-1 uppercase tracking-tight">Trình điều khiển</h1> 
+        <h1 class="text-2xl font-black text-center text-slate-800 mb-1 uppercase tracking-tight">Trình điều khiển</h1>
         <p class="text-[10px] text-center text-gray-400 mb-6 font-bold tracking-widest uppercase">Hệ thống dải phân cách tự động</p>
 
         <!-- Trạng thái kết nối -->
@@ -36,7 +53,7 @@
             </button>
         </div>
 
-        <!-- RTC Display (Đọc trực tiếp từ điện thoại) -->
+        <!-- RTC Display -->
         <div class="text-center mb-6 bg-slate-900 p-6 rounded-[2rem] shadow-xl border-b-4 border-slate-950">
             <p class="text-[10px] text-slate-500 uppercase font-black mb-2 tracking-widest">Thời gian điện thoại</p>
             <div id="rtc-display" class="text-5xl font-mono font-bold text-green-400 tracking-tighter drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">--:--:--</div>
@@ -82,7 +99,7 @@
             <p id="alarm-status" class="text-[10px] text-indigo-500 mt-3 font-bold italic text-center min-h-[1.2em] uppercase"></p>
         </div>
 
-        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.7 • Scheduled Direction</p>
+        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.8 • Anti-Selection Update</p>
     </div>
 
     <script>
@@ -94,18 +111,22 @@
         let sendQueue = [];
         let syncTimer = null;
         let uiClockTimer = null;
-        let selectedDir = 'L'; // Mặc định là Trái
+        let selectedDir = 'L';
+
+        // Chặn menu ngữ cảnh trên toàn bộ trang (đặc biệt là các nút)
+        window.oncontextmenu = function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        };
 
         const buttons = document.querySelectorAll('.momentary-btn');
-        
-        // Khởi tạo trạng thái nút hướng ban đầu
         document.getElementById('dir-left').classList.add('direction-selected');
 
         function selectDirection(dir) {
             selectedDir = dir;
             const leftBtn = document.getElementById('dir-left');
             const rightBtn = document.getElementById('dir-right');
-            
             if (dir === 'L') {
                 leftBtn.classList.add('direction-selected');
                 rightBtn.classList.remove('direction-selected');
@@ -128,7 +149,6 @@
             const startAction = (e) => {
                 if (e.cancelable) e.preventDefault();
                 if (btn.classList.contains('btn-pressed')) return;
-                
                 const cmd = btn.getAttribute('data-cmd');
                 btn.classList.add('btn-pressed');
                 sendCmd(cmd);
@@ -142,6 +162,7 @@
                 }
             };
 
+            // Gắn sự kiện chặn mặc định để tránh bôi đen/zoom
             btn.addEventListener('touchstart', startAction, {passive: false});
             btn.addEventListener('touchend', stopAction, {passive: false});
             btn.addEventListener('touchcancel', stopAction, {passive: false});
@@ -155,28 +176,18 @@
                 await device.gatt.disconnect();
                 return;
             }
-
             try {
                 device = await navigator.bluetooth.requestDevice({
                     filters: [{ name: 'ESP32_Motor_Control' }],
                     optionalServices: [SERVICE_UUID]
                 });
-
                 const server = await device.gatt.connect();
                 const service = await server.getPrimaryService(SERVICE_UUID);
                 characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
-
                 await characteristic.startNotifications();
-                
-                characteristic.addEventListener('characteristicvaluechanged', (e) => {
-                    const v = new TextDecoder().decode(e.target.value);
-                    console.log("ESP Feedback:", v);
-                });
-
                 device.addEventListener('gattserverdisconnected', onDisconnected);
                 updateUI(true);
                 startBackgroundSync();
-
             } catch (err) {
                 console.error("Lỗi:", err);
                 updateUI(false);
@@ -196,8 +207,7 @@
             const hh = String(now.getHours()).padStart(2, '0');
             const mm = String(now.getMinutes()).padStart(2, '0');
             const ss = String(now.getSeconds()).padStart(2, '0');
-            const syncCmd = `S${hh}${mm}${ss}`;
-            sendCmd(syncCmd, true); 
+            sendCmd(`S${hh}${mm}${ss}`, true); 
         }
 
         function startBackgroundSync() {
@@ -207,17 +217,13 @@
         }
 
         function stopBackgroundSync() {
-            if (syncTimer) {
-                clearInterval(syncTimer);
-                syncTimer = null;
-            }
+            if (syncTimer) { clearInterval(syncTimer); syncTimer = null; }
         }
 
         function updateUI(connected) {
             const st = document.getElementById('status-text');
             const si = document.getElementById('status-indicator');
             const cb = document.getElementById('connect-btn');
-            
             st.innerText = connected ? "Đã kết nối" : "Chưa kết nối";
             si.className = connected ? "status-dot bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "status-dot bg-red-500 animate-pulse";
             cb.innerText = connected ? "NGẮT" : "KẾT NỐI";
@@ -228,31 +234,24 @@
 
         async function sendCmd(cmd, isPriority = false) {
             if (!characteristic) return;
-
             if (isSending && !isPriority) {
                 sendQueue = [cmd]; 
                 return;
             }
-
             try {
                 isSending = true;
                 const data = new TextEncoder().encode(cmd + "\n");
-                
                 try {
                     await characteristic.writeValueWithoutResponse(data);
                 } catch (e) {
                     await characteristic.writeValue(data);
                 }
             } catch (err) {
-                console.warn("Lỗi truyền tin:", err);
                 if (!device || !device.gatt.connected) onDisconnected();
             } finally {
-                setTimeout(async () => {
+                setTimeout(() => {
                     isSending = false;
-                    if (sendQueue.length > 0) {
-                        const nextCmd = sendQueue.shift();
-                        sendCmd(nextCmd);
-                    }
+                    if (sendQueue.length > 0) sendCmd(sendQueue.shift());
                 }, 60); 
             }
         }
@@ -260,16 +259,11 @@
         function setAlarm() {
             const timeVal = document.getElementById('alarm-time').value;
             if (!timeVal) return;
-            
             const parts = timeVal.split(':');
             let hh = parts[0].padStart(2, '0');
             let mm = parts[1].padStart(2, '0');
             let ss = (parts[2] || "00").padStart(2, '0');
-            
-            // Định dạng lệnh mới: HHMMSS + L hoặc R (Ví dụ: 083000L)
-            const formattedTimeWithDir = hh + mm + ss + selectedDir;
-            sendCmd(formattedTimeWithDir); 
-            
+            sendCmd(hh + mm + ss + selectedDir); 
             const statusEl = document.getElementById('alarm-status');
             const dirText = selectedDir === 'L' ? "SANG TRÁI" : "SANG PHẢI";
             statusEl.innerText = `ĐÃ GỬI: ${hh}:${mm}:${ss} (${dirText})`;
@@ -278,4 +272,3 @@
     </script>
 </body>
 </html>
-
