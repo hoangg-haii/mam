@@ -40,23 +40,16 @@
             <div id="rtc-display" class="text-5xl font-mono font-bold text-green-400 tracking-tighter drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">--:--:--</div>
         </div>
 
-        <!-- Bảng điều khiển (Nhấn-Nhả) -->
+        <!-- Bảng điều khiển (Đã bỏ dấu chấm, đưa nút Lên vào giữa) -->
         <div class="grid grid-cols-3 gap-5 mb-8">
             <!-- Row 1 -->
-            <div></div>
+            <button data-cmd="1" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">L1</button>
             <button data-cmd="t" class="momentary-btn bg-slate-100 text-slate-700 p-8 rounded-3xl flex justify-center shadow-md border-b-4 border-slate-300 active:border-b-0 active:translate-y-1">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m18 15-6-6-6 6"/></svg>
             </button>
-            <div></div>
-
-            <!-- Row 2 -->
-            <button data-cmd="1" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">L1</button>
-            <div class="flex items-center justify-center">
-                <div class="w-3 h-3 bg-slate-200 rounded-full"></div>
-            </div>
             <button data-cmd="3" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">R1</button>
 
-            <!-- Row 3 -->
+            <!-- Row 2 -->
             <button data-cmd="2" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">L2</button>
             <button data-cmd="l" class="momentary-btn bg-slate-100 text-slate-700 p-8 rounded-3xl flex justify-center shadow-md border-b-4 border-slate-300 active:border-b-0 active:translate-y-1">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m6 9 6 6 6-6"/></svg>
@@ -87,7 +80,6 @@
         let isSending = false;
         let sendQueue = [];
 
-        // Cấu hình nhấn nhả
         const buttons = document.querySelectorAll('.momentary-btn');
         
         buttons.forEach(btn => {
@@ -104,7 +96,7 @@
                 if (e.cancelable) e.preventDefault();
                 if (btn.classList.contains('btn-pressed')) {
                     btn.classList.remove('btn-pressed');
-                    sendCmd('d'); // Tự động dừng
+                    sendCmd('d'); 
                 }
             };
 
@@ -167,13 +159,10 @@
                 : "bg-blue-600 text-white px-5 py-2 rounded-xl font-bold text-sm shadow-lg";
         }
 
-        // Hàm gửi lệnh tối ưu hóa để tránh rớt kết nối
         async function sendCmd(cmd) {
             if (!characteristic) return;
 
-            // Chế độ "Lock" để tránh ghi đè lệnh khi Bluetooth đang bận
             if (isSending) {
-                // Nếu đang bận, chỉ giữ lại lệnh cuối cùng trong hàng đợi (thường là lệnh Stop 'd')
                 sendQueue = [cmd]; 
                 return;
             }
@@ -182,7 +171,6 @@
                 isSending = true;
                 const data = new TextEncoder().encode(cmd + "\n");
                 
-                // Sử dụng writeValueWithoutResponse nếu thiết bị hỗ trợ để nhanh hơn và ổn định hơn
                 try {
                     await characteristic.writeValueWithoutResponse(data);
                 } catch (e) {
@@ -190,10 +178,8 @@
                 }
             } catch (err) {
                 console.warn("Lỗi truyền tin:", err);
-                // Nếu lỗi do thiết bị mất kết nối, cập nhật UI
                 if (!device || !device.gatt.connected) onDisconnected();
             } finally {
-                // Nghỉ 50ms giữa các lần gửi lệnh để ESP32 kịp xử lý Serial
                 setTimeout(async () => {
                     isSending = false;
                     if (sendQueue.length > 0) {
