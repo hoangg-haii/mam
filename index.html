@@ -15,6 +15,7 @@
         .control-btn:active { transform: scale(0.92); filter: brightness(0.7); }
         .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; }
         .btn-pressed { background-color: #1e293b !important; color: white !important; border-color: #1e293b !important; }
+        * { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center p-4 font-sans text-slate-800">
@@ -40,7 +41,7 @@
             <div id="rtc-display" class="text-5xl font-mono font-bold text-green-400 tracking-tighter drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">--:--:--</div>
         </div>
 
-        <!-- Bảng điều khiển (Đã bỏ dấu chấm, đưa nút Lên vào giữa) -->
+        <!-- Bảng điều khiển -->
         <div class="grid grid-cols-3 gap-5 mb-8">
             <!-- Row 1 -->
             <button data-cmd="1" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">L1</button>
@@ -69,7 +70,7 @@
             <p id="alarm-status" class="text-[10px] text-indigo-500 mt-3 font-bold italic text-center min-h-[1.2em] uppercase"></p>
         </div>
 
-        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.1 • Stable Connect</p>
+        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.5 • Real-time Auto Sync</p>
     </div>
 
     <script>
@@ -79,6 +80,7 @@
         let device, characteristic;
         let isSending = false;
         let sendQueue = [];
+        let syncTimer = null;
 
         const buttons = document.querySelectorAll('.momentary-btn');
         
@@ -134,6 +136,10 @@
 
                 device.addEventListener('gattserverdisconnected', onDisconnected);
                 updateUI(true);
+
+                // Bắt đầu chu kỳ đồng bộ thời gian chạy nền
+                startBackgroundSync();
+
             } catch (err) {
                 console.error("Lỗi:", err);
                 updateUI(false);
@@ -144,6 +150,37 @@
             updateUI(false);
             characteristic = null;
             device = null;
+            stopBackgroundSync();
+        }
+
+        // Hàm gửi thời gian thực xuống ESP
+        function syncTimeNow() {
+            if (!characteristic || !device || !device.gatt.connected) return;
+            
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            
+            // Gửi lệnh đồng bộ với tiền tố 'S' (VD: S123045)
+            // Lệnh này không can thiệp vào hàng đợi lệnh vận hành để ưu tiên phản hồi nút bấm
+            const syncCmd = `S${hh}${mm}${ss}`;
+            sendCmd(syncCmd, true); // true = priority/silent
+        }
+
+        function startBackgroundSync() {
+            stopBackgroundSync();
+            // Đồng bộ ngay lập tức khi kết nối
+            syncTimeNow();
+            // Cập nhật mỗi 30 giây để đảm bảo chính xác tuyệt đối
+            syncTimer = setInterval(syncTimeNow, 30000);
+        }
+
+        function stopBackgroundSync() {
+            if (syncTimer) {
+                clearInterval(syncTimer);
+                syncTimer = null;
+            }
         }
 
         function updateUI(connected) {
@@ -159,10 +196,11 @@
                 : "bg-blue-600 text-white px-5 py-2 rounded-xl font-bold text-sm shadow-lg";
         }
 
-        async function sendCmd(cmd) {
+        async function sendCmd(cmd, isPriority = false) {
             if (!characteristic) return;
 
-            if (isSending) {
+            // Nếu không phải ưu tiên và đang bận, cho vào hàng đợi
+            if (isSending && !isPriority) {
                 sendQueue = [cmd]; 
                 return;
             }
@@ -180,13 +218,14 @@
                 console.warn("Lỗi truyền tin:", err);
                 if (!device || !device.gatt.connected) onDisconnected();
             } finally {
+                // Nghỉ 60ms để ESP xử lý Serial buffer
                 setTimeout(async () => {
                     isSending = false;
                     if (sendQueue.length > 0) {
                         const nextCmd = sendQueue.shift();
                         sendCmd(nextCmd);
                     }
-                }, 50); 
+                }, 60); 
             }
         }
 
