@@ -15,6 +15,7 @@
         .control-btn:active { transform: scale(0.92); filter: brightness(0.7); }
         .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; }
         .btn-pressed { background-color: #1e293b !important; color: white !important; border-color: #1e293b !important; }
+        .direction-selected { background-color: #4f46e5 !important; color: white !important; border-color: #4338ca !important; }
         * { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
@@ -63,6 +64,17 @@
             <h2 class="text-[10px] font-black mb-4 text-indigo-800 uppercase tracking-[0.2em] text-center">Đặt lịch mở dải phân cách</h2>
             <div class="flex flex-col gap-3">
                 <input type="time" id="alarm-time" step="1" class="w-full border-2 border-indigo-100 rounded-2xl p-4 text-2xl font-bold text-indigo-900 bg-white focus:outline-none focus:border-indigo-500 text-center">
+                
+                <!-- Lựa chọn hướng -->
+                <div class="flex gap-2">
+                    <button id="dir-left" onclick="selectDirection('L')" class="flex-1 bg-white border-2 border-indigo-100 py-3 rounded-xl font-bold text-indigo-700 transition-all">
+                        SANG TRÁI
+                    </button>
+                    <button id="dir-right" onclick="selectDirection('R')" class="flex-1 bg-white border-2 border-indigo-100 py-3 rounded-xl font-bold text-indigo-700 transition-all">
+                        SANG PHẢI
+                    </button>
+                </div>
+
                 <button onclick="setAlarm()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-indigo-700 active:scale-[0.98] transition-all">
                     XÁC NHẬN HẸN GIỜ
                 </button>
@@ -70,7 +82,7 @@
             <p id="alarm-status" class="text-[10px] text-indigo-500 mt-3 font-bold italic text-center min-h-[1.2em] uppercase"></p>
         </div>
 
-        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.6 • Local Time Sync</p>
+        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.7 • Scheduled Direction</p>
     </div>
 
     <script>
@@ -82,10 +94,27 @@
         let sendQueue = [];
         let syncTimer = null;
         let uiClockTimer = null;
+        let selectedDir = 'L'; // Mặc định là Trái
 
         const buttons = document.querySelectorAll('.momentary-btn');
         
-        // Cập nhật đồng hồ hiển thị trên UI từ điện thoại liên tục
+        // Khởi tạo trạng thái nút hướng ban đầu
+        document.getElementById('dir-left').classList.add('direction-selected');
+
+        function selectDirection(dir) {
+            selectedDir = dir;
+            const leftBtn = document.getElementById('dir-left');
+            const rightBtn = document.getElementById('dir-right');
+            
+            if (dir === 'L') {
+                leftBtn.classList.add('direction-selected');
+                rightBtn.classList.remove('direction-selected');
+            } else {
+                rightBtn.classList.add('direction-selected');
+                leftBtn.classList.remove('direction-selected');
+            }
+        }
+
         function updateUIClock() {
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ":" + 
@@ -139,7 +168,6 @@
 
                 await characteristic.startNotifications();
                 
-                // Vẫn lắng nghe phản hồi từ ESP nếu cần (ví dụ xác nhận nhận giờ)
                 characteristic.addEventListener('characteristicvaluechanged', (e) => {
                     const v = new TextDecoder().decode(e.target.value);
                     console.log("ESP Feedback:", v);
@@ -164,13 +192,10 @@
 
         function syncTimeNow() {
             if (!characteristic || !device || !device.gatt.connected) return;
-            
             const now = new Date();
             const hh = String(now.getHours()).padStart(2, '0');
             const mm = String(now.getMinutes()).padStart(2, '0');
             const ss = String(now.getSeconds()).padStart(2, '0');
-            
-            // Lệnh S + HHMMSS để ESP32 cập nhật RTC từ điện thoại
             const syncCmd = `S${hh}${mm}${ss}`;
             sendCmd(syncCmd, true); 
         }
@@ -178,7 +203,6 @@
         function startBackgroundSync() {
             stopBackgroundSync();
             syncTimeNow();
-            // Đồng bộ liên tục mỗi 30s để bù trừ sai lệch thạch anh trên ESP
             syncTimer = setInterval(syncTimeNow, 30000);
         }
 
@@ -242,11 +266,13 @@
             let mm = parts[1].padStart(2, '0');
             let ss = (parts[2] || "00").padStart(2, '0');
             
-            const formattedTime = hh + mm + ss;
-            sendCmd(formattedTime); 
+            // Định dạng lệnh mới: HHMMSS + L hoặc R (Ví dụ: 083000L)
+            const formattedTimeWithDir = hh + mm + ss + selectedDir;
+            sendCmd(formattedTimeWithDir); 
             
             const statusEl = document.getElementById('alarm-status');
-            statusEl.innerText = "ĐÃ GỬI LỊCH: " + hh + ":" + mm + ":" + ss;
+            const dirText = selectedDir === 'L' ? "SANG TRÁI" : "SANG PHẢI";
+            statusEl.innerText = `ĐÃ GỬI: ${hh}:${mm}:${ss} (${dirText})`;
             setTimeout(() => { statusEl.innerText = ""; }, 4000);
         }
     </script>
