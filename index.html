@@ -39,7 +39,7 @@
 <body class="bg-gray-100 min-h-screen flex flex-col items-center p-4 font-sans text-slate-800">
 
     <div class="bg-white p-6 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-gray-200">
-        <h1 class="text-2xl font-black text-center text-slate-800 mb-1 uppercase tracking-tight">Trình điều khiển</h1>
+        <h1 class="text-2xl font-black text-center text-slate-800 mb-1 uppercase tracking-tight">ESP32 Controller</h1>
         <p class="text-[10px] text-center text-gray-400 mb-6 font-bold tracking-widest uppercase">Hệ thống dải phân cách tự động</p>
 
         <!-- Trạng thái kết nối -->
@@ -59,8 +59,8 @@
             <div id="rtc-display" class="text-5xl font-mono font-bold text-green-400 tracking-tighter drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">--:--:--</div>
         </div>
 
-        <!-- Bảng điều khiển -->
-        <div class="grid grid-cols-3 gap-5 mb-8">
+        <!-- Bảng điều khiển chính -->
+        <div class="grid grid-cols-3 gap-5 mb-5">
             <!-- Row 1 -->
             <button data-cmd="1" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">L1</button>
             <button data-cmd="t" class="momentary-btn bg-slate-100 text-slate-700 p-8 rounded-3xl flex justify-center shadow-md border-b-4 border-slate-300 active:border-b-0 active:translate-y-1">
@@ -74,6 +74,18 @@
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m6 9 6 6 6-6"/></svg>
             </button>
             <button data-cmd="4" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">R2</button>
+        </div>
+
+        <!-- Chức năng Nâng Hạ -->
+        <div class="grid grid-cols-2 gap-5 mb-8">
+            <button data-cmd="n" class="momentary-btn bg-amber-50 border-2 border-amber-100 p-5 rounded-3xl font-black text-xl text-amber-700 shadow-sm active:border-amber-800 flex items-center justify-center gap-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                NÂNG
+            </button>
+            <button data-cmd="h" class="momentary-btn bg-amber-50 border-2 border-amber-100 p-5 rounded-3xl font-black text-xl text-amber-700 shadow-sm active:border-amber-800 flex items-center justify-center gap-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                HẠ
+            </button>
         </div>
 
         <!-- Hẹn giờ -->
@@ -99,7 +111,7 @@
             <p id="alarm-status" class="text-[10px] text-indigo-500 mt-3 font-bold italic text-center min-h-[1.2em] uppercase"></p>
         </div>
 
-        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.8 • Anti-Selection Update</p>
+        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.9 • Lift Control Enabled</p>
     </div>
 
     <script>
@@ -113,7 +125,7 @@
         let uiClockTimer = null;
         let selectedDir = 'L';
 
-        // Chặn menu ngữ cảnh trên toàn bộ trang (đặc biệt là các nút)
+        // Chặn menu ngữ cảnh
         window.oncontextmenu = function(event) {
             event.preventDefault();
             event.stopPropagation();
@@ -158,11 +170,10 @@
                 if (e.cancelable) e.preventDefault();
                 if (btn.classList.contains('btn-pressed')) {
                     btn.classList.remove('btn-pressed');
-                    sendCmd('d'); 
+                    sendCmd('d'); // Gửi lệnh 'd' (dừng) khi nhả nút
                 }
             };
 
-            // Gắn sự kiện chặn mặc định để tránh bôi đen/zoom
             btn.addEventListener('touchstart', startAction, {passive: false});
             btn.addEventListener('touchend', stopAction, {passive: false});
             btn.addEventListener('touchcancel', stopAction, {passive: false});
