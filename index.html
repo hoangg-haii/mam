@@ -27,8 +27,38 @@
         .btn-pressed { background-color: #1e293b !important; color: white !important; border-color: #1e293b !important; }
         .direction-selected { background-color: #4f46e5 !important; color: white !important; border-color: #4338ca !important; }
         
+        /* Toggle Switch Styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 80px;
+            height: 40px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #e2e8f0;
+            transition: .4s;
+            border-radius: 34px;
+            border: 2px solid #cbd5e1;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px; width: 30px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider { background-color: #f59e0b; border-color: #d97706; }
+        input:checked + .slider:before { transform: translateX(40px); }
+
         /* Đảm bảo các input vẫn có thể chọn được */
-        input {
+        input[type="time"] {
             -webkit-user-select: text;
             user-select: text;
         }
@@ -76,16 +106,16 @@
             <button data-cmd="4" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">R2</button>
         </div>
 
-        <!-- Chức năng Nâng Hạ -->
-        <div class="grid grid-cols-2 gap-5 mb-8">
-            <button data-cmd="n" class="momentary-btn bg-amber-50 border-2 border-amber-100 p-5 rounded-3xl font-black text-xl text-amber-700 shadow-sm active:border-amber-800 flex items-center justify-center gap-2">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-                NÂNG
-            </button>
-            <button data-cmd="h" class="momentary-btn bg-amber-50 border-2 border-amber-100 p-5 rounded-3xl font-black text-xl text-amber-700 shadow-sm active:border-amber-800 flex items-center justify-center gap-2">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-                HẠ
-            </button>
+        <!-- Nâng Hạ (Dạng Toggle Duy Nhất) -->
+        <div class="bg-amber-50 p-5 rounded-[2.5rem] border border-amber-100 mb-8 flex items-center justify-between shadow-sm">
+            <div class="flex flex-col">
+                <span class="text-amber-900 font-black text-sm uppercase tracking-wider">Nâng gầm</span>
+                <span id="lift-label" class="text-[10px] text-amber-600 font-bold uppercase">Trạng thái: ĐANG HẠ</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="lift-toggle" onchange="toggleLift()">
+                <span class="slider"></span>
+            </label>
         </div>
 
         <!-- Hẹn giờ -->
@@ -111,7 +141,7 @@
             <p id="alarm-status" class="text-[10px] text-indigo-500 mt-3 font-bold italic text-center min-h-[1.2em] uppercase"></p>
         </div>
 
-        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v3.9 • Lift Control Enabled</p>
+        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v4.1 • Toggle Switch Update</p>
     </div>
 
     <script>
@@ -148,6 +178,22 @@
             }
         }
 
+        // Xử lý nút Gạt Bật/Tắt Nâng Hạ
+        function toggleLift() {
+            const toggle = document.getElementById('lift-toggle');
+            const label = document.getElementById('lift-label');
+            
+            if (toggle.checked) {
+                sendCmd('n'); // Nâng
+                label.innerText = "Trạng thái: ĐANG NÂNG";
+                label.classList.replace('text-amber-600', 'text-amber-700');
+            } else {
+                sendCmd('h'); // Hạ
+                label.innerText = "Trạng thái: ĐANG HẠ";
+                label.classList.replace('text-amber-700', 'text-amber-600');
+            }
+        }
+
         function updateUIClock() {
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ":" + 
@@ -170,7 +216,7 @@
                 if (e.cancelable) e.preventDefault();
                 if (btn.classList.contains('btn-pressed')) {
                     btn.classList.remove('btn-pressed');
-                    sendCmd('d'); // Gửi lệnh 'd' (dừng) khi nhả nút
+                    sendCmd('d'); 
                 }
             };
 
@@ -210,6 +256,9 @@
             characteristic = null;
             device = null;
             stopBackgroundSync();
+            // Reset UI toggle
+            document.getElementById('lift-toggle').checked = false;
+            document.getElementById('lift-label').innerText = "Trạng thái: ĐANG HẠ";
         }
 
         function syncTimeNow() {
