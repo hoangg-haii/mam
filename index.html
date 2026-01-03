@@ -63,6 +63,13 @@
             user-select: text;
         }
 
+        /* Hiệu ứng nút bị khóa */
+        .btn-disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            filter: grayscale(1);
+        }
+
         * { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
@@ -89,8 +96,8 @@
             <div id="rtc-display" class="text-5xl font-mono font-bold text-green-400 tracking-tighter drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">--:--:--</div>
         </div>
 
-        <!-- Bảng điều khiển chính -->
-        <div class="grid grid-cols-3 gap-5 mb-5">
+        <!-- Bảng điều khiển chính (Sẽ bị khóa nếu gầm đang hạ) -->
+        <div id="movement-controls" class="grid grid-cols-3 gap-5 mb-5 btn-disabled">
             <!-- Row 1 -->
             <button data-cmd="1" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">L1</button>
             <button data-cmd="t" class="momentary-btn bg-slate-100 text-slate-700 p-8 rounded-3xl flex justify-center shadow-md border-b-4 border-slate-300 active:border-b-0 active:translate-y-1">
@@ -106,11 +113,11 @@
             <button data-cmd="4" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-2xl text-slate-700 shadow-sm active:border-slate-800">R2</button>
         </div>
 
-        <!-- Nâng Hạ (Dạng Toggle Duy Nhất) -->
+        <!-- Nâng Hạ (Toggle Switch duy nhất) -->
         <div class="bg-amber-50 p-5 rounded-[2.5rem] border border-amber-100 mb-8 flex items-center justify-between shadow-sm">
             <div class="flex flex-col">
-                <span class="text-amber-900 font-black text-sm uppercase tracking-wider">Nâng gầm</span>
-                <span id="lift-label" class="text-[10px] text-amber-600 font-bold uppercase">Trạng thái: ĐANG HẠ</span>
+                <span class="text-amber-900 font-black text-sm uppercase tracking-wider">Trạng thái gầm</span>
+                <span id="lift-label" class="text-[10px] text-amber-600 font-bold uppercase">ĐANG HẠ (OFF)</span>
             </div>
             <label class="switch">
                 <input type="checkbox" id="lift-toggle" onchange="toggleLift()">
@@ -141,7 +148,7 @@
             <p id="alarm-status" class="text-[10px] text-indigo-500 mt-3 font-bold italic text-center min-h-[1.2em] uppercase"></p>
         </div>
 
-        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v4.1 • Toggle Switch Update</p>
+        <p class="text-[9px] text-slate-300 mt-6 text-center uppercase tracking-widest font-bold">BTLE v4.2 • Safety Lock Update</p>
     </div>
 
     <script>
@@ -182,15 +189,18 @@
         function toggleLift() {
             const toggle = document.getElementById('lift-toggle');
             const label = document.getElementById('lift-label');
+            const moveControls = document.getElementById('movement-controls');
             
             if (toggle.checked) {
-                sendCmd('n'); // Nâng
-                label.innerText = "Trạng thái: ĐANG NÂNG";
+                sendCmd('n'); // Nâng (Lệnh cũ)
+                label.innerText = "ĐANG NÂNG (ON)";
                 label.classList.replace('text-amber-600', 'text-amber-700');
+                moveControls.classList.remove('btn-disabled'); // Mở khóa di chuyển
             } else {
-                sendCmd('h'); // Hạ
-                label.innerText = "Trạng thái: ĐANG HẠ";
+                sendCmd('h'); // Hạ (Lệnh cũ)
+                label.innerText = "ĐANG HẠ (OFF)";
                 label.classList.replace('text-amber-700', 'text-amber-600');
+                moveControls.classList.add('btn-disabled'); // Khóa di chuyển
             }
         }
 
@@ -256,9 +266,10 @@
             characteristic = null;
             device = null;
             stopBackgroundSync();
-            // Reset UI toggle
+            // Reset UI
             document.getElementById('lift-toggle').checked = false;
-            document.getElementById('lift-label').innerText = "Trạng thái: ĐANG HẠ";
+            document.getElementById('lift-label').innerText = "ĐANG HẠ (OFF)";
+            document.getElementById('movement-controls').classList.add('btn-disabled');
         }
 
         function syncTimeNow() {
