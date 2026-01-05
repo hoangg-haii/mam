@@ -119,6 +119,29 @@
         .segmented-control button:not(.active) {
             color: #64748b;
         }
+
+        /* Day Picker */
+        .day-chip {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+        }
+        .day-chip.selected {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -229,7 +252,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
         <div class="flex items-center gap-2 overflow-hidden px-2">
-             <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20_t11/logo.png" class="w-6 h-6 object-contain flex-none" onerror="this.src='https://via.placeholder.com/24'">
+             <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" class="w-6 h-6 object-contain flex-none" onerror="this.src='https://via.placeholder.com/24'">
              <h1 id="page-title" class="text-[10px] font-black text-slate-800 uppercase tracking-tighter truncate">Điều khiển</h1>
         </div>
         <div class="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-slate-100 shadow-sm flex-none">
@@ -282,45 +305,65 @@
 
         <!-- TRANG HẸN GIỜ -->
         <div id="page-alarm" class="hidden h-full flex flex-col space-y-4">
-            <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl border-b-[4px] border-slate-950 text-center flex-none">
+            <div class="bg-slate-900 p-6 rounded-[2.5rem] shadow-xl border-b-[4px] border-slate-950 text-center flex-none">
                 <p class="text-[8px] text-slate-500 uppercase font-black mb-1 tracking-[0.3em]">Giờ hệ thống thực tế</p>
-                <div class="rtc-display text-5xl font-mono font-bold text-emerald-400 tracking-tighter">--:--:--</div>
+                <div class="rtc-display text-4xl font-mono font-bold text-emerald-400 tracking-tighter">--:--:--</div>
             </div>
 
             <div class="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-4 flex-1 flex flex-col overflow-hidden">
                 
                 <!-- Chuyển đổi chế độ -->
                 <div class="segmented-control">
-                    <button id="mode-manual" class="active" onclick="switchAlarmMode('manual')">Đặt thủ công</button>
-                    <button id="mode-file" onclick="switchAlarmMode('file')">Nhập file di chuyển</button>
+                    <button id="mode-manual" class="active" onclick="switchAlarmMode('manual')">Đặt lịch</button>
+                    <button id="mode-file" onclick="switchAlarmMode('file')">Nhập file</button>
                 </div>
 
                 <!-- Nội dung Thủ công -->
                 <div id="alarm-manual-ui" class="space-y-4 flex-1 flex flex-col justify-center">
                     <div class="text-center">
-                        <h2 class="text-[10px] font-black text-slate-900 uppercase tracking-widest">Thiết lập thời gian</h2>
+                        <h2 class="text-[10px] font-black text-slate-900 uppercase tracking-widest">Thiết lập thời gian & lịch</h2>
                     </div>
-                    <div class="relative group">
-                        <input type="time" id="alarm-time" step="1" class="w-full border-b-4 border-indigo-100 py-2 text-6xl font-black text-slate-900 bg-transparent focus:outline-none text-center focus:border-indigo-600 transition-colors">
+                    
+                    <!-- Time Input -->
+                    <div class="relative">
+                        <input type="time" id="alarm-time" step="1" class="w-full border-b-2 border-indigo-100 py-1 text-5xl font-black text-slate-900 bg-transparent focus:outline-none text-center focus:border-indigo-600 transition-colors">
                     </div>
-                    <div class="flex gap-3 p-2 bg-slate-50 rounded-2xl">
-                        <button id="dir-left" onclick="setDir('L')" class="flex-1 py-4 rounded-xl font-black text-[11px] uppercase transition-all tracking-widest bg-white text-slate-400 shadow-sm">Sang Trái</button>
-                        <button id="dir-right" onclick="setDir('R')" class="flex-1 py-4 rounded-xl font-black text-[11px] uppercase transition-all tracking-widest bg-white text-slate-400 shadow-sm">Sang Phải</button>
+
+                    <!-- Day Picker (Tượng trưng) -->
+                    <div class="space-y-2">
+                        <p class="text-[9px] text-slate-400 font-black uppercase text-center tracking-widest">Các ngày trong tuần</p>
+                        <div class="flex justify-between px-2">
+                            <div class="day-chip selected" onclick="toggleDay(this)">T2</div>
+                            <div class="day-chip selected" onclick="toggleDay(this)">T3</div>
+                            <div class="day-chip selected" onclick="toggleDay(this)">T4</div>
+                            <div class="day-chip selected" onclick="toggleDay(this)">T5</div>
+                            <div class="day-chip selected" onclick="toggleDay(this)">T6</div>
+                            <div class="day-chip selected" onclick="toggleDay(this)">T7</div>
+                            <div class="day-chip" onclick="toggleDay(this)">CN</div>
+                        </div>
                     </div>
-                    <button onclick="confirmAlarm()" class="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black text-sm shadow-xl shadow-indigo-100 active:scale-95 transition-all uppercase tracking-widest">Xác nhận lịch</button>
+
+                    <!-- Direction -->
+                    <div class="flex gap-2 p-1.5 bg-slate-50 rounded-2xl">
+                        <button id="dir-left" onclick="setDir('L')" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase transition-all tracking-widest bg-white text-slate-400 shadow-sm">Trái</button>
+                        <button id="dir-right" onclick="setDir('R')" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase transition-all tracking-widest bg-white text-slate-400 shadow-sm">Phải</button>
+                    </div>
+
+                    <button onclick="confirmAlarm()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-sm shadow-xl shadow-indigo-100 active:scale-95 transition-all uppercase tracking-widest">Xác nhận lịch</button>
                 </div>
 
-                <!-- Nội dung Nhập file (Tượng trưng) -->
+                <!-- Nội dung Nhập file -->
                 <div id="alarm-file-ui" class="hidden space-y-4 flex-1 flex flex-col justify-center items-center text-center">
                     <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-2 border-2 border-dashed border-slate-200">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     </div>
-                    <h3 class="text-xs font-black text-slate-700 uppercase italic">Nhập file di chuyển có sẵn</h3>
-                    <p class="text-[10px] text-slate-400 px-6 font-medium">Tải lên tệp cấu hình (.json, .csv) để thực hiện quy trình di chuyển tự động phức tạp.</p>
+                    <h3 class="text-xs font-black text-slate-700 uppercase italic">Nhập file cấu hình</h3>
+                    <p class="text-[10px] text-slate-400 px-6 font-medium leading-relaxed">Tệp .txt: <b>083000L</b> (8h30-Trái)<br>Dòng tiếp theo: <b>170000R</b> (17h-Phải)</p>
                     <label class="cursor-pointer bg-slate-900 text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all mt-4">
-                        Chọn tệp tin
-                        <input type="file" class="hidden" accept=".json,.csv,.txt">
+                        Chọn tệp tin .txt
+                        <input type="file" id="file-input" class="hidden" accept=".txt" onchange="handleFileUpload(event)">
                     </label>
+                    <p id="file-status" class="text-[9px] font-bold text-indigo-500 uppercase mt-2"></p>
                 </div>
                 
                 <p id="alarm-info" class="text-[10px] text-emerald-600 text-center font-bold italic min-h-[1.5em] uppercase"></p>
@@ -422,7 +465,6 @@
             toggleSidebar();
         }
 
-        // Chuyển đổi chế độ Hẹn giờ
         function switchAlarmMode(mode) {
             const manualBtn = document.getElementById('mode-manual');
             const fileBtn = document.getElementById('mode-file');
@@ -440,6 +482,40 @@
                 fileUI.classList.remove('hidden');
                 manualUI.classList.add('hidden');
             }
+        }
+
+        // Tượng trưng chọn ngày
+        function toggleDay(el) {
+            el.classList.toggle('selected');
+        }
+
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            const statusLabel = document.getElementById('file-status');
+            const infoLabel = document.getElementById('alarm-info');
+            
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const content = e.target.result;
+                const lines = content.split(/\r?\n/).filter(line => line.trim().length > 0);
+                if (lines.length === 0) { statusLabel.innerText = "File trống"; return; }
+                if (!characteristic) { statusLabel.innerText = "Chưa kết nối Bluetooth"; return; }
+                statusLabel.innerText = `Đang gửi ${lines.length} lệnh...`;
+                let successCount = 0;
+                for (let line of lines) {
+                    const cleanCmd = line.trim().toUpperCase();
+                    if (cleanCmd.length === 7 && (cleanCmd.endsWith('L') || cleanCmd.endsWith('R'))) {
+                        await sendCmd(cleanCmd);
+                        successCount++;
+                        await new Promise(r => setTimeout(r, 200));
+                    }
+                }
+                statusLabel.innerText = `Hoàn tất: ${successCount}/${lines.length} lệnh`;
+                infoLabel.innerText = `Đã nhập file: ${file.name}`;
+                setTimeout(() => { statusLabel.innerText = ""; infoLabel.innerText = ""; }, 5000);
+            };
+            reader.readAsText(file);
         }
 
         window.oncontextmenu = (e) => e.preventDefault();
@@ -602,8 +678,8 @@
 
         function setDir(d) {
             alarmDir = d;
-            document.getElementById('dir-left').className = d === 'L' ? "flex-1 py-4 rounded-xl font-black text-[11px] uppercase bg-indigo-600 text-white shadow-md" : "flex-1 py-4 rounded-xl font-black text-[11px] uppercase bg-white text-slate-400 shadow-sm";
-            document.getElementById('dir-right').className = d === 'R' ? "flex-1 py-4 rounded-xl font-black text-[11px] uppercase bg-indigo-600 text-white shadow-md" : "flex-1 py-4 rounded-xl font-black text-[11px] uppercase bg-white text-slate-400 shadow-sm";
+            document.getElementById('dir-left').className = d === 'L' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-indigo-600 text-white shadow-md" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-white text-slate-400 shadow-sm";
+            document.getElementById('dir-right').className = d === 'R' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-indigo-600 text-white shadow-md" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-white text-slate-400 shadow-sm";
         }
         setDir('L');
 
@@ -611,9 +687,13 @@
             const time = document.getElementById('alarm-time').value;
             if (!time) return;
             const cleanTime = time.replace(/:/g, '') + "00";
+            // Lệnh gửi đi vẫn là HHMMSS[Dir] để tương thích code cũ
             sendCmd(cleanTime.substring(0,6) + alarmDir);
+            
+            // Hiển thị thông báo trên UI bao gồm cả các ngày đã chọn
+            const selectedDays = Array.from(document.querySelectorAll('.day-chip.selected')).map(d => d.innerText).join(', ');
             const info = document.getElementById('alarm-info');
-            info.innerText = `Đã gửi: ${time} (Sang ${alarmDir === 'L' ? 'Trái' : 'Phải'})`;
+            info.innerText = `Lịch: ${time} (${selectedDays}) -> ${alarmDir === 'L' ? 'Trái' : 'Phải'}`;
             setTimeout(() => info.innerText = "", 5000);
         }
     </script>
