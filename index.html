@@ -181,7 +181,7 @@
                     <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" alt="Logo" class="w-12 h-12 object-contain">
                 </div>
                 <h2 class="text-sm font-black uppercase tracking-tight leading-tight">Phần mềm điều khiển hệ thống dải phân cách tự động</h2>
-                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v3.35.11 • Dự án Khoa học kỹ thuật</p>
+                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v3.35.12 • Dự án Khoa học kỹ thuật</p>
             </div>
             <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                 <div class="space-y-3 text-sm text-slate-600 leading-relaxed">
@@ -248,7 +248,7 @@
             <button id="power-btn" onclick="togglePower()" class="power-btn-circle power-on active:scale-90">
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
             </button>
-            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">v3.35.11</span>
+            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">v3.35.12</span>
         </div>
     </div>
 
@@ -303,7 +303,7 @@
                     </button>
                     <button data-cmd="4" class="momentary-btn bg-white border border-slate-200 p-5 rounded-3xl font-black text-lg text-slate-700 shadow-sm">R2</button>
                 </div>
-                <button id="emergency-stop" class="w-full bg-rose-600 text-white py-5 rounded-3xl flex items-center justify-center gap-3 shadow-lg shadow-rose-100 active:scale-95 transition-all flex-none">
+                <button class="emergency-stop-global w-full bg-rose-600 text-white py-5 rounded-3xl flex items-center justify-center gap-3 shadow-lg shadow-rose-100 active:scale-95 transition-all flex-none">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
                     <span class="font-black text-base uppercase tracking-widest italic leading-none">Dừng khẩn cấp</span>
                 </button>
@@ -349,10 +349,16 @@
             </div>
 
             <!-- DANH SÁCH LỆNH CHỜ -->
-            <div class="flex-1 bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="flex-1 bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-0">
                 <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                    <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Danh sách lệnh chờ</h3>
-                    <div id="pending-count" class="bg-indigo-100 text-indigo-700 text-[8px] px-2 py-0.5 rounded-full font-black">0</div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Danh sách lệnh chờ</h3>
+                        <div id="pending-count" class="bg-indigo-100 text-indigo-700 text-[8px] px-2 py-0.5 rounded-full font-black">0</div>
+                    </div>
+                    <button id="clear-all-btn" onclick="clearAllCommands()" class="text-[9px] font-black text-rose-500 uppercase flex items-center gap-1 active:scale-90 transition-all">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+                        Xóa tất cả
+                    </button>
                 </div>
                 <div id="pending-list" class="flex-1 overflow-y-auto p-4 space-y-2 custom-scroll">
                     <div id="empty-pending-msg" class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 opacity-50">
@@ -360,7 +366,13 @@
                         <span class="text-[9px] font-bold uppercase tracking-widest italic">Chưa có lệnh nào</span>
                     </div>
                 </div>
-                <p id="alarm-info" class="p-2 text-[9px] text-emerald-600 text-center font-bold italic min-h-[1.5em] uppercase"></p>
+                <div class="p-4 bg-slate-50 border-t border-slate-100 flex flex-col gap-2">
+                    <button class="emergency-stop-global w-full bg-rose-600 text-white py-4 rounded-2xl flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                        <span class="font-black text-sm uppercase tracking-widest italic">Dừng khẩn cấp</span>
+                    </button>
+                    <p id="alarm-info" class="text-[9px] text-emerald-600 text-center font-bold italic uppercase h-3"></p>
+                </div>
             </div>
         </div>
 
@@ -507,6 +519,27 @@
             }
         }
 
+        async function clearAllCommands() {
+            if (pendingCommands.length === 0) return;
+            const info = document.getElementById('alarm-info');
+            info.innerText = "Đang xóa tất cả...";
+            
+            // Sao chép danh sách để tránh lỗi khi mảng thay đổi trong lúc lặp
+            const toDelete = [...pendingCommands];
+            for (const cmd of toDelete) {
+                // Chỉ xóa các lệnh không đang thực hiện
+                if (!cmd.isExecuting) {
+                    await sendCmd('X' + cmd.raw);
+                    const idx = pendingCommands.findIndex(c => c.id === cmd.id);
+                    if (idx !== -1) pendingCommands.splice(idx, 1);
+                    updatePendingUI();
+                    await new Promise(r => setTimeout(r, 500)); // Khoảng nghỉ 500ms
+                }
+            }
+            info.innerText = "Đã hoàn tất xóa hàng loạt";
+            setTimeout(() => info.innerText = "", 3000);
+        }
+
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             const infoLabel = document.getElementById('alarm-info');
@@ -542,8 +575,8 @@
         function showError(msg) {
             const info = document.getElementById('alarm-info');
             info.innerText = msg;
-            info.className = "p-2 text-[9px] text-rose-500 text-center font-bold italic min-h-[1.5em] uppercase";
-            setTimeout(() => { info.innerText = ""; info.className = "p-2 text-[9px] text-emerald-600 text-center font-bold italic min-h-[1.5em] uppercase"; }, 4000);
+            info.className = "text-[9px] text-rose-500 text-center font-bold italic uppercase h-3";
+            setTimeout(() => { info.innerText = ""; info.className = "text-[9px] text-emerald-600 text-center font-bold italic uppercase h-3"; }, 4000);
         }
 
         window.oncontextmenu = (e) => e.preventDefault();
@@ -611,17 +644,19 @@
             if(sToggle.checked) { sToggle.checked = false; onSirenChange(); }
         }
 
-        // --- DÒNG LỆNH CẬP NHẬT: DỪNG KHẨN CẤP GỬI 'dkc' ---
-        const emergencyBtn = document.getElementById('emergency-stop');
-        emergencyBtn.addEventListener('touchstart', (e) => { 
-            if (e.cancelable) e.preventDefault(); 
-            sendCmd('dkc'); // Cập nhật từ 'd' sang 'dkc'
-        }, {passive: false});
-        emergencyBtn.addEventListener('mousedown', () => sendCmd('dkc'));
+        // --- GLOBAL EMERGENCY STOP ---
+        document.querySelectorAll('.emergency-stop-global').forEach(btn => {
+            const trigger = (e) => { 
+                if (e.cancelable) e.preventDefault(); 
+                sendCmd('dkc'); 
+            };
+            btn.addEventListener('touchstart', trigger, {passive: false});
+            btn.addEventListener('mousedown', trigger);
+        });
 
         document.querySelectorAll('.momentary-btn').forEach(btn => {
             const start = (e) => { if (e.cancelable) e.preventDefault(); btn.classList.add('btn-pressed'); sendCmd(btn.getAttribute('data-cmd')); };
-            const stop = () => { btn.classList.remove('btn-pressed'); sendCmd('dkc'); }; // Cập nhật dừng từ 'd' sang 'dkc'
+            const stop = () => { btn.classList.remove('btn-pressed'); sendCmd('dkc'); };
             btn.addEventListener('touchstart', start, {passive: false});
             btn.addEventListener('touchend', stop);
             btn.addEventListener('mousedown', start);
