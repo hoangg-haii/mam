@@ -1,44 +1,61 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Barrier Control Pro - ESP32</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Chống bôi đen và tối ưu cảm ứng */
+        /* Khóa cuộn trang hoàn toàn và ngăn chặn bounce effect trên iOS */
+        html, body {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            touch-action: none;
+        }
+
         body {
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+            background-color: #f8fafc;
+            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Tối ưu cảm ứng cho các nút */
+        .momentary-btn, #emergency-stop, .switch, button {
             touch-action: manipulation;
         }
 
-        .control-btn-active { transform: scale(0.92); filter: brightness(0.8); }
-        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; }
         .btn-pressed { background-color: #0f172a !important; color: white !important; }
         
         /* Toggle Switch Custom */
         .switch {
             position: relative;
             display: inline-block;
-            width: 64px;
-            height: 32px;
+            width: 60px;
+            height: 30px;
         }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute;
             cursor: pointer;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #e2e8f0;
+            background-color: #cbd5e1;
             transition: .4s;
-            border-radius: 32px;
+            border-radius: 30px;
         }
         .slider:before {
             position: absolute;
             content: "";
-            height: 24px; width: 24px;
+            height: 22px; width: 22px;
             left: 4px; bottom: 4px;
             background-color: white;
             transition: .4s;
@@ -46,11 +63,11 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         input:checked + .slider { background-color: #10b981; }
-        input:checked + .slider:before { transform: translateX(32px); }
+        input:checked + .slider:before { transform: translateX(30px); }
 
         .btn-disabled {
             opacity: 0.2;
-            pointer-events: none; 
+            pointer-events: none;
             filter: grayscale(1);
         }
 
@@ -61,44 +78,33 @@
         * { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col items-center font-sans text-slate-800">
+<body>
 
     <!-- MODAL GIỚI THIỆU -->
-    <div id="intro-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm">
+    <div id="intro-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/90 backdrop-blur-md">
         <div class="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-            <div class="bg-indigo-600 p-8 text-center text-white">
-                <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-white/30">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <div class="bg-indigo-600 p-6 text-center text-white">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg overflow-hidden">
+                    <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" alt="Logo" class="w-12 h-12 object-contain">
                 </div>
-                <h2 class="text-xl font-black uppercase tracking-tight">Barrier Control Pro</h2>
-                <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest mt-1">Hệ thống điều khiển thông minh</p>
+                <h2 class="text-lg font-black uppercase tracking-tight leading-tight">Barrier Control Pro</h2>
+                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-1">Hệ thống điều khiển mô hình</p>
             </div>
             
-            <div class="p-6 space-y-4">
+            <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                 <div class="space-y-3 text-sm text-slate-600 leading-relaxed">
-                    <p><b>Giới thiệu:</b> Ứng dụng quản lý dải phân cách di động qua Bluetooth, cho phép điều khiển nâng hạ và di chuyển chính xác từ xa.</p>
-                    <div>
-                        <b class="text-slate-800">Hướng dẫn sử dụng:</b>
-                        <ul class="list-disc ml-4 mt-1 space-y-1">
-                            <li>Mở <b>Menu (☰)</b> để thực hiện <b>Kết nối</b>.</li>
-                            <li>Gạt công tắc <b>Bật</b> để nâng gầm thiết bị.</li>
-                            <li>Sau khi nâng, sử dụng các phím mũi tên để di chuyển.</li>
-                            <li>Vào Menu chọn <b>Hẹn giờ</b> để lập lịch tự động.</li>
-                        </ul>
+                    <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
+                        <p class="flex justify-between"><b>Người thực hiện:</b> <span class="text-indigo-700 font-bold">Hoàng Hải</span></p>
+                        <p class="flex justify-between mt-1"><b>Đơn vị:</b> <span class="text-indigo-700 font-bold">THPT Trần Quý Cáp</span></p>
                     </div>
-                </div>
-
-                <div class="bg-rose-50 p-4 rounded-2xl border border-rose-100 flex items-start gap-3">
-                    <div class="mt-1 text-rose-600">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></svg>
+                    <div class="space-y-2">
+                        <p><b>Giới thiệu:</b> Phần mềm chuyên dụng để điều khiển mô hình hệ thống dải phân cách tự động qua kết nối Bluetooth năng lượng thấp.</p>
+                        <p><b>Lưu ý quan trọng:</b> Trước khi tắt ứng dụng hoặc ngắt kết nối, hãy đảm bảo đã <b>"Tắt" (Hạ gầm)</b> thiết bị để bảo vệ động cơ.</p>
                     </div>
-                    <p class="text-[11px] text-rose-700 font-black uppercase leading-tight italic">
-                        Lưu ý: Trước khi tắt hoặc ngắt kết nối cần "Tắt" (Hạ gầm) thiết bị.
-                    </p>
                 </div>
                 
-                <button onclick="closeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all uppercase tracking-widest">
-                    Đã hiểu & Bắt đầu
+                <button onclick="closeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all uppercase tracking-widest mt-2">
+                    Bắt đầu điều khiển
                 </button>
             </div>
         </div>
@@ -107,20 +113,20 @@
     <!-- SIDEBAR MENU -->
     <div id="overlay" class="fixed inset-0 z-[60] bg-slate-900/40 hidden opacity-0" onclick="toggleSidebar()"></div>
     <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-white z-[70] shadow-2xl translate-x-[-100%] flex flex-col">
-        <div class="p-8 bg-slate-900 text-white">
-            <h2 class="text-xl font-black uppercase tracking-tighter">Cấu hình</h2>
-            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Hệ thống v5.0</p>
+        <div class="p-8 bg-slate-900 text-white flex flex-col items-center">
+            <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" class="w-16 h-16 mb-4 invert brightness-200">
+            <h2 class="text-lg font-black uppercase tracking-tighter">Barrier Pro</h2>
+            <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">Phiên bản v5.5</p>
         </div>
         
-        <div class="flex-1 p-4 space-y-2">
-            <!-- Khu vực kết nối Bluetooth -->
-            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
-                <div class="flex items-center justify-between mb-4">
+        <div class="flex-1 p-4 space-y-2 overflow-y-auto" style="touch-action: pan-y;">
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-4">
+                <div class="flex items-center justify-between">
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black text-slate-400 uppercase">Trạng thái BT</span>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Bluetooth</span>
                         <div class="flex items-center mt-1">
-                            <div id="status-dot" class="status-dot bg-red-500 mr-2 animate-pulse"></div>
-                            <span id="status-label" class="text-xs font-bold text-slate-700 uppercase">Chưa kết nối</span>
+                            <div id="status-dot" class="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
+                            <span id="status-label" class="text-[10px] font-bold text-slate-700 uppercase">Ngắt kết nối</span>
                         </div>
                     </div>
                     <button id="connect-btn" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-md active:scale-90 transition-all uppercase">Kết nối</button>
@@ -136,53 +142,59 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                     Hẹn giờ di chuyển
                 </button>
-                <button onclick="location.reload()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-xs uppercase tracking-wider transition-all mt-10">
+                <button onclick="openIntro()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-xs uppercase tracking-wider transition-all">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    Thông tin dự án
+                </button>
+                <button onclick="location.reload()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-xs uppercase tracking-wider transition-all mt-8 border-t border-slate-50 pt-6">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                    Làm mới ứng dụng
+                    Tải lại App
                 </button>
             </nav>
         </div>
         
-        <div class="p-6 border-t border-slate-100 text-center">
-            <p class="text-[9px] text-slate-300 font-bold uppercase tracking-widest">Barrier Control v5.0 • 2024</p>
+        <div class="p-4 border-t border-slate-100 text-center">
+            <p class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">Design by Hoang Hai © 2024</p>
         </div>
     </div>
 
     <!-- HEADER -->
-    <header class="w-full max-w-md flex items-center justify-between p-6">
+    <header class="w-full max-w-md flex items-center justify-between p-4 flex-none z-50">
         <button onclick="toggleSidebar()" class="p-3 bg-white shadow-sm border border-slate-200 rounded-2xl text-slate-800 active:scale-90 transition-all">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
-        <h1 id="page-title" class="text-sm font-black text-slate-800 uppercase tracking-tighter">Điều khiển chính</h1>
+        <div class="flex items-center gap-2">
+             <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" class="w-6 h-6 object-contain">
+             <h1 id="page-title" class="text-xs font-black text-slate-800 uppercase tracking-tighter">Điều khiển</h1>
+        </div>
         <div class="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-slate-100 shadow-sm">
             <div id="mini-status" class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
         </div>
     </header>
 
-    <main id="main-content" class="w-full max-w-md px-4 pb-10">
+    <main id="main-content" class="w-full max-w-md px-4 flex-1 flex flex-col overflow-hidden pb-8">
         
         <!-- TRANG ĐIỀU KHIỂN -->
-        <div id="page-control" class="space-y-6">
+        <div id="page-control" class="space-y-4 flex flex-col h-full overflow-hidden">
             
-            <!-- KHU VỰC LOGO CỦA BẠN -->
-            <div class="flex justify-center mb-2">
-                <div class="w-24 h-24 bg-white rounded-full p-2 shadow-sm border border-slate-100 flex items-center justify-center overflow-hidden">
-                    <!-- THAY LINK ẢNH LOGO CỦA BẠN VÀO ĐÂY -->
+            <!-- LOGO HIỂN THỊ CHÍNH -->
+            <div class="flex justify-center flex-none py-2">
+                <div class="w-24 h-24 bg-white rounded-full p-2 shadow-md border-4 border-white flex items-center justify-center overflow-hidden">
                     <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" alt="Logo" class="max-w-full h-auto object-contain">
                 </div>
             </div>
 
             <!-- Đồng hồ RTC -->
-            <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border-b-[6px] border-slate-950 text-center">
-                <p class="text-[9px] text-slate-500 uppercase font-black mb-2 tracking-[0.3em]">Hệ thống thời gian thực</p>
-                <div id="rtc-display" class="text-5xl font-mono font-bold text-emerald-400 tracking-tighter">--:--:--</div>
+            <div class="bg-slate-900 p-6 rounded-[2rem] shadow-xl border-b-[4px] border-slate-950 text-center flex-none">
+                <p class="text-[8px] text-slate-500 uppercase font-black mb-1 tracking-[0.3em]">Hệ thống thời gian</p>
+                <div id="rtc-display" class="text-4xl font-mono font-bold text-emerald-400 tracking-tighter">--:--:--</div>
             </div>
 
             <!-- Nâng Hạ Toggle -->
-            <div class="bg-amber-50 p-6 rounded-[2.5rem] border border-amber-100 flex items-center justify-between shadow-sm">
+            <div class="bg-white p-5 rounded-[2rem] border border-slate-200 flex items-center justify-between shadow-sm flex-none">
                 <div class="flex flex-col">
-                    <span class="text-amber-900 font-black text-xs uppercase tracking-wider">Trạng thái gầm</span>
-                    <span id="lift-label" class="text-sm text-amber-600 font-black uppercase mt-1">Tắt (OFF)</span>
+                    <span class="text-slate-400 font-black text-[10px] uppercase tracking-wider">Trạng thái gầm</span>
+                    <span id="lift-label" class="text-sm text-slate-800 font-black uppercase">Tắt (OFF)</span>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="lift-toggle" onchange="onLiftChange()">
@@ -190,48 +202,48 @@
                 </label>
             </div>
 
-            <!-- Khu vực phím di chuyển (Có viền mảnh bao quanh) -->
-            <div class="p-5 rounded-[2.5rem] border border-slate-800/10 bg-white/50 space-y-4">
-                <div id="move-panel" class="grid grid-cols-3 gap-4 btn-disabled transition-all duration-300">
-                    <button data-cmd="1" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-xl text-slate-700 shadow-sm">L1</button>
-                    <button data-cmd="t" class="momentary-btn bg-slate-100 text-slate-700 p-7 rounded-3xl flex justify-center shadow-md border-b-4 border-slate-300">
+            <!-- Khu vực phím di chuyển -->
+            <div class="p-4 rounded-[2.5rem] border border-slate-800/10 bg-white/40 space-y-4 flex-1 flex flex-col justify-center">
+                <div id="move-panel" class="grid grid-cols-3 gap-3 btn-disabled transition-all duration-300">
+                    <button data-cmd="1" class="momentary-btn bg-white border border-slate-200 p-5 rounded-3xl font-black text-lg text-slate-700 shadow-sm active:bg-slate-50">L1</button>
+                    <button data-cmd="t" class="momentary-btn bg-slate-900 text-white p-6 rounded-3xl flex justify-center shadow-lg border-b-4 border-slate-700">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m18 15-6-6-6 6"/></svg>
                     </button>
-                    <button data-cmd="3" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-xl text-slate-700 shadow-sm">R1</button>
+                    <button data-cmd="3" class="momentary-btn bg-white border border-slate-200 p-5 rounded-3xl font-black text-lg text-slate-700 shadow-sm active:bg-slate-50">R1</button>
 
-                    <button data-cmd="2" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-xl text-slate-700 shadow-sm">L2</button>
-                    <button data-cmd="l" class="momentary-btn bg-slate-100 text-slate-700 p-7 rounded-3xl flex justify-center shadow-md border-b-4 border-slate-300">
+                    <button data-cmd="2" class="momentary-btn bg-white border border-slate-200 p-5 rounded-3xl font-black text-lg text-slate-700 shadow-sm active:bg-slate-50">L2</button>
+                    <button data-cmd="l" class="momentary-btn bg-slate-900 text-white p-6 rounded-3xl flex justify-center shadow-lg border-b-4 border-slate-700">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m6 9 6 6 6-6"/></svg>
                     </button>
-                    <button data-cmd="4" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-xl text-slate-700 shadow-sm">R2</button>
+                    <button data-cmd="4" class="momentary-btn bg-white border border-slate-200 p-5 rounded-3xl font-black text-lg text-slate-700 shadow-sm active:bg-slate-50">R2</button>
                 </div>
 
                 <!-- NÚT DỪNG KHẨN CẤP -->
-                <button id="emergency-stop" data-cmd="d" class="w-full bg-rose-600 text-white p-6 rounded-3xl flex items-center justify-center gap-3 shadow-lg shadow-rose-200 active:scale-95 active:bg-rose-700 transition-all">
+                <button id="emergency-stop" class="w-full bg-rose-600 text-white py-5 rounded-3xl flex items-center justify-center gap-3 shadow-lg shadow-rose-200 active:scale-95 active:bg-rose-700 transition-all flex-none">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-                    <span class="font-black text-lg uppercase tracking-widest italic">Dừng khẩn cấp</span>
+                    <span class="font-black text-base uppercase tracking-widest italic leading-none">Dừng khẩn cấp</span>
                 </button>
             </div>
         </div>
 
         <!-- TRANG HẸN GIỜ -->
-        <div id="page-alarm" class="hidden space-y-6">
-            <div class="bg-indigo-50 p-8 rounded-[2.5rem] border border-indigo-100 shadow-sm space-y-6 text-center">
+        <div id="page-alarm" class="hidden space-y-4 pt-4 h-full flex flex-col">
+            <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-6 text-center flex-1 flex flex-col justify-center">
                 <div class="space-y-1">
-                    <h2 class="text-sm font-black text-indigo-900 uppercase tracking-widest">Đặt lịch tự động</h2>
-                    <p class="text-[10px] text-indigo-400 font-bold uppercase">Di chuyển theo thời gian cố định</p>
+                    <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Hẹn giờ tự động</h2>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Lập lịch di chuyển mô hình</p>
                 </div>
                 
-                <input type="time" id="alarm-time" step="1" class="w-full border-4 border-white rounded-3xl p-6 text-4xl font-black text-indigo-900 bg-white focus:outline-none shadow-inner text-center">
+                <input type="time" id="alarm-time" step="1" class="w-full border-b-4 border-slate-100 p-4 text-5xl font-black text-slate-900 bg-transparent focus:outline-none text-center">
                 
-                <div class="flex gap-2 p-2 bg-indigo-100/50 rounded-2xl">
-                    <button id="dir-left" onclick="setDir('L')" class="flex-1 py-4 rounded-xl font-black text-[10px] uppercase transition-all tracking-widest bg-white text-indigo-400">Trái</button>
-                    <button id="dir-right" onclick="setDir('R')" class="flex-1 py-4 rounded-xl font-black text-[10px] uppercase transition-all tracking-widest bg-white text-indigo-400">Phải</button>
+                <div class="flex gap-3 p-2 bg-slate-50 rounded-2xl">
+                    <button id="dir-left" onclick="setDir('L')" class="flex-1 py-4 rounded-xl font-black text-[11px] uppercase transition-all tracking-widest bg-white text-slate-400 shadow-sm">Di chuyển Trái</button>
+                    <button id="dir-right" onclick="setDir('R')" class="flex-1 py-4 rounded-xl font-black text-[11px] uppercase transition-all tracking-widest bg-white text-slate-400 shadow-sm">Di chuyển Phải</button>
                 </div>
 
-                <button onclick="confirmAlarm()" class="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black text-sm shadow-xl shadow-indigo-200 active:scale-95 transition-all uppercase tracking-[0.2em]">Xác nhận lịch</button>
+                <button onclick="confirmAlarm()" class="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black text-sm shadow-xl shadow-indigo-100 active:scale-95 transition-all uppercase tracking-[0.2em]">Lưu cài đặt</button>
                 
-                <p id="alarm-info" class="text-[10px] text-indigo-500 font-bold italic min-h-[1.5em] uppercase"></p>
+                <p id="alarm-info" class="text-[10px] text-emerald-500 font-bold italic min-h-[1.5em] uppercase"></p>
             </div>
         </div>
 
@@ -248,6 +260,11 @@
         // Modal điều khiển
         function closeModal() {
             document.getElementById('intro-modal').classList.add('hidden');
+        }
+
+        function openIntro() {
+            document.getElementById('intro-modal').classList.remove('hidden');
+            toggleSidebar();
         }
 
         // Sidebar & Điều hướng
@@ -272,12 +289,19 @@
         function showPage(pageId) {
             document.getElementById('page-control').classList.toggle('hidden', pageId !== 'control');
             document.getElementById('page-alarm').classList.toggle('hidden', pageId !== 'alarm');
-            document.getElementById('page-title').innerText = pageId === 'control' ? "Điều khiển chính" : "Hẹn giờ tự động";
+            document.getElementById('page-title').innerText = pageId === 'control' ? "Điều khiển" : "Hẹn giờ";
             toggleSidebar();
         }
 
-        // Chặn menu chuột phải và bôi đen
+        // Chặn menu chuột phải & kéo cuộn
         window.oncontextmenu = (e) => e.preventDefault();
+        
+        // Chặn các thao tác cuộn trên toàn bộ body trừ các khu vực được phép
+        document.addEventListener('touchmove', function(e) {
+            if (!e.target.closest('.overflow-y-auto')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
 
         // Đồng hồ hệ thống
         setInterval(() => {
@@ -294,26 +318,26 @@
             if (toggle.checked) {
                 sendCmd('n');
                 label.innerText = "Bật (ON)";
-                label.className = "text-sm text-emerald-600 font-black uppercase mt-1";
+                label.className = "text-sm text-emerald-600 font-black uppercase";
                 panel.classList.remove('btn-disabled');
             } else {
                 sendCmd('h');
                 label.innerText = "Tắt (OFF)";
-                label.className = "text-sm text-amber-600 font-black uppercase mt-1";
+                label.className = "text-sm text-slate-800 font-black uppercase";
                 panel.classList.add('btn-disabled');
             }
         }
 
-        // Xử lý phím di chuyển và nút dừng khẩn cấp
-        // Nút dừng khẩn cấp sử dụng logic click/touchstart trực tiếp không phụ thuộc nhả phím
+        // Dừng khẩn cấp
         const emergencyBtn = document.getElementById('emergency-stop');
-        emergencyBtn.addEventListener('touchstart', (e) => {
+        const handleEmergency = (e) => {
             if (e.cancelable) e.preventDefault();
             sendCmd('d');
-        });
-        emergencyBtn.addEventListener('mousedown', () => sendCmd('d'));
+        };
+        emergencyBtn.addEventListener('touchstart', handleEmergency, {passive: false});
+        emergencyBtn.addEventListener('mousedown', handleEmergency);
 
-        // Các phím điều hướng (Momentary)
+        // Các phím di chuyển (Momentary)
         const buttons = document.querySelectorAll('.momentary-btn');
         buttons.forEach(btn => {
             const start = (e) => {
@@ -332,7 +356,7 @@
             btn.addEventListener('mouseleave', stop);
         });
 
-        // Kết nối Bluetooth
+        // Bluetooth
         document.getElementById('connect-btn').addEventListener('click', async () => {
             if (device && device.gatt.connected) {
                 await device.gatt.disconnect();
@@ -349,7 +373,10 @@
                 device.addEventListener('gattserverdisconnected', onDisconnected);
                 updateUI(true);
                 syncTime();
-            } catch (err) { updateUI(false); }
+            } catch (err) { 
+                console.error(err);
+                updateUI(false); 
+            }
         });
 
         function onDisconnected() { updateUI(false); }
@@ -360,8 +387,8 @@
             const btn = document.getElementById('connect-btn');
             const mini = document.getElementById('mini-status');
 
-            label.innerText = connected ? "Đã kết nối" : "Chưa kết nối";
-            dot.className = connected ? "status-dot bg-emerald-500 shadow-lg" : "status-dot bg-red-500 animate-pulse";
+            label.innerText = connected ? "Đã kết nối" : "Ngắt kết nối";
+            dot.className = connected ? "w-2 h-2 rounded-full bg-emerald-500 shadow-sm" : "w-2 h-2 rounded-full bg-red-500 animate-pulse";
             mini.className = connected ? "w-2.5 h-2.5 rounded-full bg-emerald-500" : "w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse";
             btn.innerText = connected ? "Ngắt" : "Kết nối";
             btn.className = connected ? "bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-[10px] font-black" : "bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-md";
@@ -384,11 +411,10 @@
             sendCmd(`S${h}${m}${s}`);
         }
 
-        // Hẹn giờ
         function setDir(d) {
             alarmDir = d;
-            document.getElementById('dir-left').className = d === 'L' ? "flex-1 py-4 rounded-xl font-black text-[10px] uppercase transition-all bg-indigo-600 text-white" : "flex-1 py-4 rounded-xl font-black text-[10px] uppercase bg-white text-indigo-400";
-            document.getElementById('dir-right').className = d === 'R' ? "flex-1 py-4 rounded-xl font-black text-[10px] uppercase transition-all bg-indigo-600 text-white" : "flex-1 py-4 rounded-xl font-black text-[10px] uppercase bg-white text-indigo-400";
+            document.getElementById('dir-left').className = d === 'L' ? "flex-1 py-4 rounded-xl font-black text-[11px] uppercase transition-all bg-indigo-600 text-white shadow-md" : "flex-1 py-4 rounded-xl font-black text-[11px] uppercase bg-white text-slate-400 shadow-sm";
+            document.getElementById('dir-right').className = d === 'R' ? "flex-1 py-4 rounded-xl font-black text-[11px] uppercase transition-all bg-indigo-600 text-white shadow-md" : "flex-1 py-4 rounded-xl font-black text-[11px] uppercase bg-white text-slate-400 shadow-sm";
         }
         setDir('L');
 
@@ -398,7 +424,7 @@
             const cleanTime = time.replace(/:/g, '') + "00";
             sendCmd(cleanTime.substring(0,6) + alarmDir);
             const info = document.getElementById('alarm-info');
-            info.innerText = `Đã gửi lịch: ${time} (${alarmDir === 'L' ? 'Trái' : 'Phải'})`;
+            info.innerText = `Lịch: ${time} (${alarmDir === 'L' ? 'Trái' : 'Phải'}) đã gửi!`;
             setTimeout(() => info.innerText = "", 5000);
         }
     </script>
