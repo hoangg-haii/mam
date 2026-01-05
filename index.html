@@ -85,7 +85,7 @@
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
             </div>
             <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight mb-2">Xác nhận ngắt?</h3>
-            <p class="text-sm text-slate-500 mb-6 leading-relaxed">Hệ thống sẽ tự động <b>Hạ gầm (Tắt)</b> để đảm bảo an toàn trước khi ngắt kết nối.</p>
+            <p class="text-sm text-slate-500 mb-6 leading-relaxed">Hệ thống sẽ tự động <b>Hạ gầm</b> và gửi tín hiệu <b>Tạm biệt</b> trước khi ngắt.</p>
             <div class="flex gap-3">
                 <button onclick="hideConfirm()" class="flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 uppercase text-xs">Hủy</button>
                 <button onclick="executeDisconnect()" class="flex-1 py-3 rounded-xl font-black text-white bg-rose-600 shadow-lg shadow-rose-200 uppercase text-xs">Đồng ý</button>
@@ -369,13 +369,15 @@
                     onLiftChange(); 
                 }
                 
-                // Gửi lệnh 'h' (Hạ gầm) về ESP32 trước khi ngắt
+                // Gửi lệnh 'h' (Hạ gầm) và 'baibai' (Tạm biệt) về ESP32 trước khi ngắt
                 await sendCmd('h');
+                await new Promise(r => setTimeout(r, 100)); // Chờ một chút giữa các lệnh
+                await sendCmd('baibai');
                 
-                // Đợi một chút để lệnh được gửi đi thành công trước khi ngắt gatt
+                // Đợi lệnh được gửi đi hoàn tất trước khi ngắt kết nối vật lý
                 setTimeout(async () => {
                     await device.gatt.disconnect();
-                }, 300);
+                }, 400);
             }
         }
 
