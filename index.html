@@ -68,9 +68,30 @@
         #overlay { transition: opacity 0.3s ease; }
 
         * { -webkit-tap-highlight-color: transparent; }
+
+        /* Animation cho Modal */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-fade-in { animation: fadeIn 0.2s ease-out; }
+        .animate-slide-up { animation: slideUp 0.3s ease-out; }
     </style>
 </head>
 <body>
+
+    <!-- CUSTOM CONFIRM MODAL (Thay thế alert/confirm) -->
+    <div id="confirm-modal" class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm hidden animate-fade-in">
+        <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-6 text-center animate-slide-up">
+            <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
+            </div>
+            <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight mb-2">Xác nhận ngắt?</h3>
+            <p class="text-sm text-slate-500 mb-6 leading-relaxed">Hệ thống sẽ tự động <b>Hạ gầm (Tắt)</b> để đảm bảo an toàn trước khi ngắt kết nối.</p>
+            <div class="flex gap-3">
+                <button onclick="hideConfirm()" class="flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 uppercase text-xs">Hủy</button>
+                <button onclick="executeDisconnect()" class="flex-1 py-3 rounded-xl font-black text-white bg-rose-600 shadow-lg shadow-rose-200 uppercase text-xs">Đồng ý</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL GIỚI THIỆU -->
     <div id="intro-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/90 backdrop-blur-md">
@@ -206,7 +227,6 @@
 
         <!-- TRANG HẸN GIỜ -->
         <div id="page-alarm" class="hidden h-full flex flex-col space-y-4">
-            <!-- ĐỒNG HỒ TO TRANG HẸN GIỜ -->
             <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl border-b-[4px] border-slate-950 text-center flex-none">
                 <p class="text-[8px] text-slate-500 uppercase font-black mb-1 tracking-[0.3em]">Giờ hệ thống thực tế</p>
                 <div class="rtc-display text-5xl font-mono font-bold text-emerald-400 tracking-tighter">--:--:--</div>
@@ -223,8 +243,8 @@
                 </div>
                 
                 <div class="flex gap-3 p-2 bg-slate-50 rounded-2xl">
-                    <button id="dir-left" onclick="setDir('L')" class="flex-1 py-4 rounded-xl font-black text-[11px] uppercase transition-all tracking-widest bg-white text-slate-400 shadow-sm">Sang trái</button>
-                    <button id="dir-right" onclick="setDir('R')" class="flex-1 py-4 rounded-xl font-black text-[11px] uppercase transition-all tracking-widest bg-white text-slate-400 shadow-sm">Sang phải</button>
+                    <button id="dir-left" onclick="setDir('L')" class="flex-1 py-4 rounded-xl font-black text-[11px] uppercase transition-all tracking-widest bg-white text-slate-400 shadow-sm">Lên/Trái</button>
+                    <button id="dir-right" onclick="setDir('R')" class="flex-1 py-4 rounded-xl font-black text-[11px] uppercase transition-all tracking-widest bg-white text-slate-400 shadow-sm">Xuống/Phải</button>
                 </div>
 
                 <button onclick="confirmAlarm()" class="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black text-sm shadow-xl shadow-indigo-100 active:scale-95 transition-all uppercase tracking-widest">Xác nhận lịch</button>
@@ -246,6 +266,7 @@
         function closeModal() { document.getElementById('intro-modal').classList.add('hidden'); }
         function openIntro() { document.getElementById('intro-modal').classList.remove('hidden'); toggleSidebar(); }
 
+        // Sidebar logic
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
@@ -260,6 +281,7 @@
             }
         }
 
+        // Chuyển trang
         function showPage(pageId) {
             document.getElementById('page-control').classList.toggle('hidden', pageId !== 'control');
             document.getElementById('page-alarm').classList.toggle('hidden', pageId !== 'alarm');
@@ -267,16 +289,18 @@
             toggleSidebar();
         }
 
+        // Khóa cuộn trang
         window.oncontextmenu = (e) => e.preventDefault();
         document.addEventListener('touchmove', function(e) { if (!e.target.closest('.overflow-y-auto')) e.preventDefault(); }, { passive: false });
 
-        // Đồng hồ cập nhật cho cả 2 trang
+        // Cập nhật đồng hồ
         setInterval(() => {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('en-GB');
             document.querySelectorAll('.rtc-display').forEach(el => el.innerText = timeStr);
         }, 1000);
 
+        // Nâng hạ gầm bằng Toggle
         function onLiftChange() {
             const toggle = document.getElementById('lift-toggle');
             const label = document.getElementById('lift-label');
@@ -294,11 +318,12 @@
             }
         }
 
+        // Dừng khẩn cấp
         const emergencyBtn = document.getElementById('emergency-stop');
-        const handleEmergency = (e) => { if (e.cancelable) e.preventDefault(); sendCmd('d'); };
-        emergencyBtn.addEventListener('touchstart', handleEmergency, {passive: false});
-        emergencyBtn.addEventListener('mousedown', handleEmergency);
+        emergencyBtn.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); sendCmd('d'); }, {passive: false});
+        emergencyBtn.addEventListener('mousedown', () => sendCmd('d'));
 
+        // Phím di chuyển momentary
         document.querySelectorAll('.momentary-btn').forEach(btn => {
             const start = (e) => { if (e.cancelable) e.preventDefault(); btn.classList.add('btn-pressed'); sendCmd(btn.getAttribute('data-cmd')); };
             const stop = () => { btn.classList.remove('btn-pressed'); sendCmd('d'); };
@@ -309,10 +334,18 @@
             btn.addEventListener('mouseleave', stop);
         });
 
-        document.getElementById('connect-btn').addEventListener('click', async () => {
-            if (device && device.gatt.connected) { await device.gatt.disconnect(); return; }
+        // Bluetooth Connect/Disconnect logic
+        const connectBtn = document.getElementById('connect-btn');
+        connectBtn.addEventListener('click', async () => {
+            if (device && device.gatt.connected) {
+                showConfirm(); // Hiện modal xác nhận trước khi ngắt
+                return;
+            }
             try {
-                device = await navigator.bluetooth.requestDevice({ filters: [{ name: 'ESP32_Motor_Control' }], optionalServices: [SERVICE_UUID] });
+                device = await navigator.bluetooth.requestDevice({ 
+                    filters: [{ name: 'ESP32_Motor_Control' }], 
+                    optionalServices: [SERVICE_UUID] 
+                });
                 const server = await device.gatt.connect();
                 const service = await server.getPrimaryService(SERVICE_UUID);
                 characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
@@ -321,6 +354,30 @@
                 syncTime();
             } catch (err) { updateUI(false); }
         });
+
+        // Xử lý ngắt kết nối thực sự
+        function showConfirm() { document.getElementById('confirm-modal').classList.remove('hidden'); }
+        function hideConfirm() { document.getElementById('confirm-modal').classList.add('hidden'); }
+
+        async function executeDisconnect() {
+            hideConfirm();
+            if (device && device.gatt.connected) {
+                // Tắt toggle UI nếu đang mở
+                const toggle = document.getElementById('lift-toggle');
+                if (toggle.checked) {
+                    toggle.checked = false;
+                    onLiftChange(); 
+                }
+                
+                // Gửi lệnh 'h' (Hạ gầm) về ESP32 trước khi ngắt
+                await sendCmd('h');
+                
+                // Đợi một chút để lệnh được gửi đi thành công trước khi ngắt gatt
+                setTimeout(async () => {
+                    await device.gatt.disconnect();
+                }, 300);
+            }
+        }
 
         function onDisconnected() { updateUI(false); }
 
@@ -338,8 +395,14 @@
 
         async function sendCmd(cmd) {
             if (!characteristic || isSending) return;
-            try { isSending = true; await characteristic.writeValue(new TextEncoder().encode(cmd + "\n")); } catch (err) {}
-            finally { setTimeout(() => isSending = false, 50); }
+            try { 
+                isSending = true; 
+                await characteristic.writeValue(new TextEncoder().encode(cmd + "\n")); 
+            } catch (err) {
+                console.error("Gửi lệnh lỗi:", err);
+            } finally { 
+                setTimeout(() => isSending = false, 50); 
+            }
         }
 
         function syncTime() {
