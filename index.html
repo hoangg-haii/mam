@@ -171,7 +171,7 @@
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
             </div>
             <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight mb-2">Xác nhận ngắt?</h3>
-            <p class="text-sm text-slate-500 mb-6 leading-relaxed">Hệ thống sẽ tự động <b>Hạ gầm</b> trước khi ngắt.</p>
+            <p class="text-sm text-slate-500 mb-6 leading-relaxed">Hệ thống sẽ tự động <b>Hạ gầm</b> và tắt các cảnh báo trước khi ngắt.</p>
             <div class="flex gap-3">
                 <button onclick="hideConfirm()" class="flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 uppercase text-xs">Hủy</button>
                 <button onclick="executeDisconnect()" class="flex-1 py-3 rounded-xl font-black text-white bg-rose-600 shadow-lg shadow-rose-200 uppercase text-xs">Đồng ý</button>
@@ -187,7 +187,7 @@
                     <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" alt="Logo" class="w-12 h-12 object-contain">
                 </div>
                 <h2 class="text-sm font-black uppercase tracking-tight leading-tight">Phần mềm điều khiển hệ thống dải phân cách tự động</h2>
-                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v2.32.8 • Dự án Khoa học kỹ thuật</p>
+                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v3.33.09 • Dự án Khoa học kỹ thuật</p>
             </div>
             <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                 <div class="space-y-3 text-sm text-slate-600 leading-relaxed">
@@ -254,7 +254,8 @@
             <button id="power-btn" onclick="togglePower()" class="power-btn-circle power-on active:scale-90">
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
             </button>
-            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">v2.32.8</span>
+            <!-- Phiên bản hiển thị ngay dưới nút nguồn theo yêu cầu v3.33.09 -->
+            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">v3.33.09</span>
         </div>
     </div>
 
@@ -565,7 +566,6 @@
         window.oncontextmenu = (e) => e.preventDefault();
         document.addEventListener('touchmove', function(e) { if (!e.target.closest('.overflow-y-auto')) e.preventDefault(); }, { passive: false });
 
-        // Cập nhật ngày giờ
         function updateDateTime() {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('en-GB');
@@ -595,15 +595,30 @@
             }
         }
 
-        function resetAllToggles() {
-            // Đưa toàn bộ nút gạt về OFF
+        /**
+         * Chức năng: Đưa toàn bộ các nút gạt về trạng thái OFF (ngoại trừ nút nguồn)
+         * Cập nhật v3.33.09: Bao gồm cả nâng gầm và các cảnh báo
+         */
+        async function resetAllTogglesToOff() {
             const liftToggle = document.getElementById('lift-toggle');
             const lightToggle = document.getElementById('light-toggle');
             const sirenToggle = document.getElementById('siren-toggle');
             
-            if (liftToggle.checked) { liftToggle.checked = false; onLiftChange(); }
-            if (lightToggle.checked) { lightToggle.checked = false; onLightChange(); }
-            if (sirenToggle.checked) { sirenToggle.checked = false; onSirenChange(); }
+            // Logic: Kiểm tra nếu đang ON thì mới chuyển về OFF và gọi hàm cập nhật
+            if (liftToggle.checked) { 
+                liftToggle.checked = false; 
+                onLiftChange(); 
+                await new Promise(r => setTimeout(r, 100)); // Delay nhỏ để tránh nghẽn lệnh gửi
+            }
+            if (lightToggle.checked) { 
+                lightToggle.checked = false; 
+                onLightChange(); 
+                await new Promise(r => setTimeout(r, 100));
+            }
+            if (sirenToggle.checked) { 
+                sirenToggle.checked = false; 
+                onSirenChange(); 
+            }
         }
 
         function onLiftChange() {
@@ -700,19 +715,28 @@
         function showConfirm() { document.getElementById('confirm-modal').classList.remove('hidden'); }
         function hideConfirm() { document.getElementById('confirm-modal').classList.add('hidden'); }
 
+        /**
+         * Chức năng: Thực hiện ngắt kết nối và reset trạng thái UI
+         * Cập nhật v3.33.09: Tắt tất cả các toggle trước khi đóng kết nối
+         */
         async function executeDisconnect() {
             hideConfirm();
             if (device && device.gatt.connected) {
-                // Tắt tất cả các nút trạng thái trước khi ngắt hoàn toàn
-                resetAllToggles();
-                await sendCmd('h');
-                setTimeout(async () => { await device.gatt.disconnect(); }, 400);
+                // Đưa các nút trạng thái về OFF
+                await resetAllTogglesToOff();
+                // Delay nhỏ để đảm bảo các lệnh hạ gầm/tắt cảnh báo đã được gửi đi
+                setTimeout(async () => { 
+                    try {
+                        await device.gatt.disconnect(); 
+                    } catch(e) { console.log("Ngắt kết nối thủ công"); }
+                }, 500);
             }
         }
 
         function onDisconnected() { 
             updateUI(false); 
-            resetAllToggles(); // Đảm bảo UI khớp với trạng thái ngắt kết nối
+            // Khi bị ngắt kết nối (do người dùng hoặc do lỗi), reset UI về OFF
+            resetAllTogglesToOff();
         }
 
         function updateUI(connected) {
