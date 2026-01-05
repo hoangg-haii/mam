@@ -187,7 +187,7 @@
                     <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" alt="Logo" class="w-12 h-12 object-contain">
                 </div>
                 <h2 class="text-sm font-black uppercase tracking-tight leading-tight">Phần mềm điều khiển hệ thống dải phân cách tự động</h2>
-                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v2.31.8</p>
+                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v2.32.8 • Dự án Khoa học kỹ thuật</p>
             </div>
             <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                 <div class="space-y-3 text-sm text-slate-600 leading-relaxed">
@@ -206,7 +206,7 @@
                         </p>
                     </div>
                 </div>
-                <button onclick="closeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all uppercase tracking-widest mt-2">Đã hiểu</button>
+                <button onclick="closeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all uppercase tracking-widest mt-2">Bắt đầu điều khiển</button>
             </div>
         </div>
     </div>
@@ -216,7 +216,7 @@
     <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-white z-[70] shadow-2xl translate-x-[-100%] flex flex-col">
         <div class="p-8 bg-slate-900 text-white flex flex-col items-center">
             <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" class="w-16 h-16 mb-4">
-            <h2 class="text-center text-xs font-black uppercase tracking-tighter leading-tight px-2">Phần mềm điều khiển hệ thống dải phân cách tự động</h2>
+            <h2 class="text-center text-xs font-black uppercase tracking-tighter leading-tight px-2">Hệ thống dải phân cách tự động</h2>
         </div>
         <div class="flex-1 p-4 space-y-2 overflow-y-auto" style="touch-action: pan-y;">
             <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-4">
@@ -254,7 +254,7 @@
             <button id="power-btn" onclick="togglePower()" class="power-btn-circle power-on active:scale-90">
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
             </button>
-            <span class="absolute bottom-2 right-4 text-[7px] font-black text-slate-300 uppercase tracking-widest">v2.31.8</span>
+            <span class="absolute bottom-2 right-4 text-[7px] font-black text-slate-300 uppercase tracking-widest">v2.32.8</span>
         </div>
     </div>
 
@@ -282,8 +282,9 @@
                 </div>
             </div>
             <div class="bg-slate-900 p-6 rounded-[2rem] shadow-xl border-b-[4px] border-slate-950 text-center flex-none">
-                <p class="text-[8px] text-slate-500 uppercase font-black mb-1 tracking-[0.3em]">Giờ hệ thống thực tế</p>
-                <div class="rtc-display text-4xl font-mono font-bold text-emerald-400 tracking-tighter">--:--:--</div>
+                <p class="text-[8px] text-slate-500 uppercase font-black mb-1 tracking-[0.3em]">Hệ thống thời gian thực</p>
+                <div class="rtc-display text-4xl font-mono font-bold text-emerald-400 tracking-tighter leading-none">--:--:--</div>
+                <div class="date-display text-[10px] font-black text-emerald-600/60 uppercase tracking-[0.2em] mt-2">Đang tải...</div>
             </div>
             <div class="bg-white p-5 rounded-[2rem] border border-slate-200 flex items-center justify-between shadow-sm flex-none">
                 <div class="flex flex-col">
@@ -318,8 +319,9 @@
         <!-- TRANG HẸN GIỜ -->
         <div id="page-alarm" class="hidden h-full flex flex-col space-y-4">
             <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl border-b-[4px] border-slate-950 text-center flex-none">
-                <p class="text-[8px] text-slate-500 uppercase font-black mb-1 tracking-[0.3em]">Giờ hệ thống thực tế</p>
-                <div class="rtc-display text-5xl font-mono font-bold text-emerald-400 tracking-tighter">--:--:--</div>
+                <p class="text-[8px] text-slate-500 uppercase font-black mb-1 tracking-[0.3em]">Hệ thống thời gian thực</p>
+                <div class="rtc-display text-5xl font-mono font-bold text-emerald-400 tracking-tighter leading-none">--:--:--</div>
+                <div class="date-display text-[11px] font-black text-emerald-600/60 uppercase tracking-[0.25em] mt-2">Đang tải...</div>
             </div>
 
             <div class="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-4 flex-1 flex flex-col overflow-hidden">
@@ -328,14 +330,13 @@
                     <button id="mode-file" onclick="switchAlarmMode('file')">Nhập file di chuyển</button>
                 </div>
 
-                <!-- Thủ công (Có chọn ngày tượng trưng) -->
                 <div id="alarm-manual-ui" class="space-y-3 flex-1 flex flex-col justify-center">
                     <div class="relative group">
                         <input type="time" id="alarm-time" step="1" class="w-full border-b-4 border-indigo-100 py-2 text-6xl font-black text-slate-900 bg-transparent focus:outline-none text-center focus:border-indigo-600 transition-colors">
                     </div>
                     
                     <div class="space-y-2">
-                        <p class="text-[9px] font-black text-slate-400 uppercase text-center tracking-widest">Chọn thời gian lặp lại</p>
+                        <p class="text-[9px] font-black text-slate-400 uppercase text-center tracking-widest">Lặp lại</p>
                         <div class="flex justify-between px-2">
                             <button onclick="this.classList.toggle('active')" class="day-btn">T2</button>
                             <button onclick="this.classList.toggle('active')" class="day-btn">T3</button>
@@ -354,7 +355,6 @@
                     <button onclick="confirmAlarm()" class="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black text-sm shadow-xl shadow-indigo-100 active:scale-95 transition-all uppercase tracking-widest">Xác nhận lịch</button>
                 </div>
 
-                <!-- Nhập file (Thực tế) -->
                 <div id="alarm-file-ui" class="hidden space-y-4 flex-1 flex flex-col overflow-hidden">
                     <div class="flex items-center justify-between px-4 mt-2">
                         <h3 class="text-[10px] font-black text-slate-900 uppercase italic">File cấu hình di chuyển</h3>
@@ -373,7 +373,7 @@
                     <div class="p-2">
                         <label class="w-full flex items-center justify-center gap-3 bg-slate-900 text-white py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all cursor-pointer">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                            Tải file mới
+                            Tải file (.txt)
                             <input type="file" id="file-input" class="hidden" accept=".txt" onchange="handleFileUpload(event)">
                         </label>
                     </div>
@@ -423,7 +423,7 @@
                 <div class="p-4 bg-slate-900/5 rounded-[2.5rem] mt-auto">
                     <button onclick="activateAllWarnings()" class="w-full bg-rose-600 text-white py-6 rounded-[2rem] font-black text-base shadow-xl shadow-rose-200 active:scale-95 transition-all uppercase tracking-[0.2em] flex items-center justify-center gap-3">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                        Bật toàn bộ
+                        Kích hoạt toàn diện
                     </button>
                     <button onclick="deactivateAllWarnings()" class="w-full mt-3 bg-white border border-slate-200 text-slate-400 py-4 rounded-[1.5rem] font-bold text-xs active:scale-95 transition-all uppercase tracking-widest">
                         Tắt toàn bộ
@@ -442,7 +442,6 @@
         let isSending = false;
         let alarmDir = 'L';
         let isPowerOn = true;
-        let uploadedFiles = [];
 
         function closeModal() { document.getElementById('intro-modal').classList.add('hidden'); }
         function openIntro() { document.getElementById('intro-modal').classList.remove('hidden'); toggleSidebar(); }
@@ -516,19 +515,17 @@
                     return;
                 }
 
-                // Gửi dữ liệu thực
                 for (let cmd of validLines) {
                     await sendCmd(cmd);
                     await new Promise(r => setTimeout(r, 150));
                 }
 
-                // Cập nhật danh sách file hiển thị
                 addFileToList(file.name, validLines.length, hasError);
-                infoLabel.innerText = `Đã nhập: ${file.name} (${validLines.length} lệnh)`;
+                infoLabel.innerText = `Đã gửi: ${file.name} (${validLines.length} lệnh)`;
                 setTimeout(() => infoLabel.innerText = "", 4000);
             };
             reader.readAsText(file);
-            event.target.value = ''; // Reset input
+            event.target.value = '';
         }
 
         function addFileToList(name, count, hasWarning) {
@@ -545,7 +542,7 @@
                     </div>
                     <div class="flex flex-col">
                         <span class="text-[10px] font-black text-slate-800 truncate max-w-[120px] uppercase">${name}</span>
-                        <span class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">${count} lệnh thành công ${hasWarning ? '• 1 số dòng lỗi' : ''}</span>
+                        <span class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">${count} lệnh nạp ${hasWarning ? '• lỗi dòng' : ''}</span>
                     </div>
                 </div>
                 <button onclick="this.parentElement.remove()" class="text-slate-300 hover:text-rose-500 transition-colors">
@@ -568,11 +565,26 @@
         window.oncontextmenu = (e) => e.preventDefault();
         document.addEventListener('touchmove', function(e) { if (!e.target.closest('.overflow-y-auto')) e.preventDefault(); }, { passive: false });
 
-        setInterval(() => {
+        // Cập nhật ngày giờ
+        function updateDateTime() {
             const now = new Date();
+            
+            // Cập nhật đồng hồ chính
             const timeStr = now.toLocaleTimeString('en-GB');
             document.querySelectorAll('.rtc-display').forEach(el => el.innerText = timeStr);
-        }, 1000);
+
+            // Cập nhật ngày tháng năm
+            const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+            const dayName = days[now.getDay()];
+            const date = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            
+            const dateStr = `${dayName}, ${date}/${month}/${year}`;
+            document.querySelectorAll('.date-display').forEach(el => el.innerText = dateStr);
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime(); // Chạy ngay lập tức khi tải trang
 
         function togglePower() {
             const btn = document.getElementById('power-btn');
@@ -734,11 +746,9 @@
             const cleanTime = time.replace(/:/g, '') + "00";
             sendCmd(cleanTime.substring(0,6) + alarmDir);
             const info = document.getElementById('alarm-info');
-            info.innerText = `Đã đặt lịch: ${time} (Thứ tự ngày đã chọn)`;
+            info.innerText = `Đã đặt lịch: ${time}`;
             setTimeout(() => info.innerText = "", 5000);
         }
     </script>
 </body>
 </html>
-
-
