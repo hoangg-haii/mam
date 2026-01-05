@@ -58,7 +58,7 @@
         input:checked + .slider { background-color: #10b981; }
         input:checked + .slider:before { transform: translateX(24px); }
 
-        /* Switch cho Lift (Lớn hơn) */
+        /* Switch cho Lift & Warning (Lớn hơn) */
         .switch-lg { width: 60px; height: 30px; }
         .switch-lg .slider:before { height: 22px; width: 22px; left: 4px; bottom: 4px; }
         .switch-lg input:checked + .slider:before { transform: translateX(30px); }
@@ -164,14 +164,18 @@
                 </div>
             </div>
 
-            <nav class="space-y-1">
-                <button onclick="showPage('control')" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-xs uppercase tracking-wider">
+            <nav id="nav-links" class="space-y-1">
+                <button onclick="showPage('control')" data-page="control" class="nav-item w-full flex items-center gap-4 p-4 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-xs uppercase tracking-wider">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
                     Bảng điều khiển
                 </button>
-                <button onclick="showPage('alarm')" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-xs uppercase tracking-wider">
+                <button onclick="showPage('alarm')" data-page="alarm" class="nav-item w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-xs uppercase tracking-wider">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                     Hẹn giờ di chuyển
+                </button>
+                <button onclick="showPage('warning')" data-page="warning" class="nav-item w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-xs uppercase tracking-wider">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Cảnh báo
                 </button>
                 <button onclick="openIntro()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-xs uppercase tracking-wider">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
@@ -198,7 +202,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
         <div class="flex items-center gap-2 overflow-hidden px-2">
-             <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" class="w-6 h-6 object-contain flex-none">
+             <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20_t11/logo.png" class="w-6 h-6 object-contain flex-none" onerror="this.src='https://via.placeholder.com/24'">
              <h1 id="page-title" class="text-[10px] font-black text-slate-800 uppercase tracking-tighter truncate">Điều khiển</h1>
         </div>
         <div class="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-slate-100 shadow-sm flex-none">
@@ -282,6 +286,61 @@
             </div>
         </div>
 
+        <!-- TRANG CẢNH BÁO -->
+        <div id="page-warning" class="hidden h-full flex flex-col space-y-4">
+            <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl border-b-[4px] border-slate-950 text-center flex-none">
+                <p class="text-[8px] text-slate-500 uppercase font-black mb-1 tracking-[0.3em]">Hệ thống cảnh báo</p>
+                <div class="text-rose-500 text-4xl font-black uppercase italic tracking-tighter">Alert Mode</div>
+            </div>
+
+            <div class="flex-1 flex flex-col gap-4">
+                <!-- Đèn Cảnh Báo -->
+                <div class="bg-white p-6 rounded-[2rem] border border-slate-200 flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 font-black text-[10px] uppercase tracking-wider">Đèn cảnh báo</span>
+                            <span id="light-label" class="text-sm text-slate-800 font-black uppercase">Đang tắt</span>
+                        </div>
+                    </div>
+                    <label class="switch switch-lg">
+                        <input type="checkbox" id="light-toggle" onchange="onLightChange()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- Còi Cảnh Báo -->
+                <div class="bg-white p-6 rounded-[2rem] border border-slate-200 flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 font-black text-[10px] uppercase tracking-wider">Còi báo động</span>
+                            <span id="siren-label" class="text-sm text-slate-800 font-black uppercase">Đang tắt</span>
+                        </div>
+                    </div>
+                    <label class="switch switch-lg">
+                        <input type="checkbox" id="siren-toggle" onchange="onSirenChange()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- Bật cả 2 cùng lúc -->
+                <div class="p-4 bg-slate-900/5 rounded-[2.5rem] mt-auto">
+                    <button onclick="activateAllWarnings()" class="w-full bg-rose-600 text-white py-6 rounded-[2rem] font-black text-base shadow-xl shadow-rose-200 active:scale-95 transition-all uppercase tracking-[0.2em] flex items-center justify-center gap-3">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        Bật toàn bộ
+                    </button>
+                    <button onclick="deactivateAllWarnings()" class="w-full mt-3 bg-white border border-slate-200 text-slate-400 py-4 rounded-[1.5rem] font-bold text-xs active:scale-95 transition-all uppercase tracking-widest">
+                        Tắt toàn bộ
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script>
@@ -313,9 +372,21 @@
 
         // Chuyển trang
         function showPage(pageId) {
-            document.getElementById('page-control').classList.toggle('hidden', pageId !== 'control');
-            document.getElementById('page-alarm').classList.toggle('hidden', pageId !== 'alarm');
-            document.getElementById('page-title').innerText = pageId === 'control' ? "Điều khiển" : "Hẹn giờ";
+            const pages = ['page-control', 'page-alarm', 'page-warning'];
+            pages.forEach(p => document.getElementById(p).classList.add('hidden'));
+            document.getElementById('page-' + pageId).classList.remove('hidden');
+            
+            const titles = { 'control': "Điều khiển", 'alarm': "Hẹn giờ", 'warning': "Cảnh báo" };
+            document.getElementById('page-title').innerText = titles[pageId];
+            
+            // Update active state in nav
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const isMatch = item.getAttribute('data-page') === pageId;
+                item.className = isMatch 
+                    ? "nav-item w-full flex items-center gap-4 p-4 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-xs uppercase tracking-wider" 
+                    : "nav-item w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-xs uppercase tracking-wider";
+            });
+            
             toggleSidebar();
         }
 
@@ -359,6 +430,66 @@
                 label.innerText = "Hạ gầm (Tắt)";
                 label.className = "text-sm text-slate-800 font-black uppercase";
                 panel.classList.add('btn-disabled');
+            }
+        }
+
+        // Logic Đèn Cảnh Báo
+        function onLightChange() {
+            const toggle = document.getElementById('light-toggle');
+            const label = document.getElementById('light-label');
+            if (toggle.checked) {
+                sendCmd('cbon');
+                label.innerText = "Đang bật";
+                label.className = "text-sm text-amber-500 font-black uppercase";
+            } else {
+                sendCmd('cboff');
+                label.innerText = "Đang tắt";
+                label.className = "text-sm text-slate-800 font-black uppercase";
+            }
+        }
+
+        // Logic Còi Cảnh Báo
+        function onSirenChange() {
+            const toggle = document.getElementById('siren-toggle');
+            const label = document.getElementById('siren-label');
+            if (toggle.checked) {
+                sendCmd('ccbn');
+                label.innerText = "Đang bật";
+                label.className = "text-sm text-rose-500 font-black uppercase";
+            } else {
+                sendCmd('ccbf');
+                label.innerText = "Đang tắt";
+                label.className = "text-sm text-slate-800 font-black uppercase";
+            }
+        }
+
+        async function activateAllWarnings() {
+            const lToggle = document.getElementById('light-toggle');
+            const sToggle = document.getElementById('siren-toggle');
+            
+            if(!lToggle.checked) {
+                lToggle.checked = true;
+                onLightChange();
+                await new Promise(r => setTimeout(r, 100));
+            }
+            if(!sToggle.checked) {
+                sToggle.checked = true;
+                onSirenChange();
+            }
+        }
+
+        async function deactivateAllWarnings() {
+            const lToggle = document.getElementById('light-toggle');
+            const sToggle = document.getElementById('siren-toggle');
+            
+            if(lToggle.checked) {
+                lToggle.checked = false;
+                onLightChange();
+                await new Promise(r => setTimeout(r, 100));
+            }
+            if(sToggle.checked) {
+                sToggle.checked = false;
+                onSirenChange();
             }
         }
 
