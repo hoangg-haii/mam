@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -50,7 +50,7 @@
 
         .btn-disabled {
             opacity: 0.2;
-            pointer-events: none;
+            pointer-events: none; 
             filter: grayscale(1);
         }
 
@@ -144,7 +144,7 @@
         </div>
         
         <div class="p-6 border-t border-slate-100 text-center">
-            <p class="text-[9px] text-slate-300 font-bold uppercase tracking-widest">Barrier Control v5.0 • 2025 By Hoang Hai</p>
+            <p class="text-[9px] text-slate-300 font-bold uppercase tracking-widest">Barrier Control v5.0 • 2024</p>
         </div>
     </div>
 
@@ -163,6 +163,15 @@
         
         <!-- TRANG ĐIỀU KHIỂN -->
         <div id="page-control" class="space-y-6">
+            
+            <!-- KHU VỰC LOGO CỦA BẠN -->
+            <div class="flex justify-center mb-2">
+                <div class="w-24 h-24 bg-white rounded-full p-2 shadow-sm border border-slate-100 flex items-center justify-center overflow-hidden">
+                    <!-- THAY LINK ẢNH LOGO CỦA BẠN VÀO ĐÂY -->
+                    <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" alt="Logo" class="max-w-full h-auto object-contain">
+                </div>
+            </div>
+
             <!-- Đồng hồ RTC -->
             <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border-b-[6px] border-slate-950 text-center">
                 <p class="text-[9px] text-slate-500 uppercase font-black mb-2 tracking-[0.3em]">Hệ thống thời gian thực</p>
@@ -182,7 +191,7 @@
             </div>
 
             <!-- Khu vực phím di chuyển (Có viền mảnh bao quanh) -->
-            <div class="p-5 rounded-[2.5rem] border border-slate-800/10 bg-white/50">
+            <div class="p-5 rounded-[2.5rem] border border-slate-800/10 bg-white/50 space-y-4">
                 <div id="move-panel" class="grid grid-cols-3 gap-4 btn-disabled transition-all duration-300">
                     <button data-cmd="1" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-xl text-slate-700 shadow-sm">L1</button>
                     <button data-cmd="t" class="momentary-btn bg-slate-100 text-slate-700 p-7 rounded-3xl flex justify-center shadow-md border-b-4 border-slate-300">
@@ -196,6 +205,12 @@
                     </button>
                     <button data-cmd="4" class="momentary-btn bg-white border-2 border-slate-100 p-6 rounded-3xl font-black text-xl text-slate-700 shadow-sm">R2</button>
                 </div>
+
+                <!-- NÚT DỪNG KHẨN CẤP -->
+                <button id="emergency-stop" data-cmd="d" class="w-full bg-rose-600 text-white p-6 rounded-3xl flex items-center justify-center gap-3 shadow-lg shadow-rose-200 active:scale-95 active:bg-rose-700 transition-all">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                    <span class="font-black text-lg uppercase tracking-widest italic">Dừng khẩn cấp</span>
+                </button>
             </div>
         </div>
 
@@ -289,7 +304,16 @@
             }
         }
 
-        // Các phím di chuyển
+        // Xử lý phím di chuyển và nút dừng khẩn cấp
+        // Nút dừng khẩn cấp sử dụng logic click/touchstart trực tiếp không phụ thuộc nhả phím
+        const emergencyBtn = document.getElementById('emergency-stop');
+        emergencyBtn.addEventListener('touchstart', (e) => {
+            if (e.cancelable) e.preventDefault();
+            sendCmd('d');
+        });
+        emergencyBtn.addEventListener('mousedown', () => sendCmd('d'));
+
+        // Các phím điều hướng (Momentary)
         const buttons = document.querySelectorAll('.momentary-btn');
         buttons.forEach(btn => {
             const start = (e) => {
@@ -380,4 +404,3 @@
     </script>
 </body>
 </html>
-
