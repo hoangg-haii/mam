@@ -187,7 +187,7 @@
                     <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" alt="Logo" class="w-12 h-12 object-contain">
                 </div>
                 <h2 class="text-sm font-black uppercase tracking-tight leading-tight">Phần mềm điều khiển hệ thống dải phân cách tự động</h2>
-                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">Dành cho điều khiển mô hình</p>
+                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v2.0.8 • Dành cho điều khiển mô hình</p>
             </div>
             <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                 <div class="space-y-3 text-sm text-slate-600 leading-relaxed">
@@ -250,10 +250,11 @@
                 </button>
             </nav>
         </div>
-        <div class="p-6 flex flex-col items-center border-t border-slate-50">
+        <div class="p-6 flex flex-col items-center border-t border-slate-50 relative">
             <button id="power-btn" onclick="togglePower()" class="power-btn-circle power-on active:scale-90">
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
             </button>
+            <span class="absolute bottom-2 right-4 text-[7px] font-black text-slate-300 uppercase tracking-widest">v2.0.8</span>
         </div>
     </div>
 
@@ -371,7 +372,7 @@
 
                     <div class="p-2">
                         <label class="w-full flex items-center justify-center gap-3 bg-slate-900 text-white py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all cursor-pointer">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></label>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                             Tải file mới
                             <input type="file" id="file-input" class="hidden" accept=".txt" onchange="handleFileUpload(event)">
                         </label>
@@ -552,7 +553,7 @@
                 </button>
             `;
             container.prepend(item);
-        } 
+        }
 
         function showError(msg) {
             const info = document.getElementById('alarm-info');
