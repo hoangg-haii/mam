@@ -29,12 +29,12 @@
 
         .btn-pressed { background-color: #0f172a !important; color: white !important; }
         
-        /* Toggle Switch */
+        /* Toggle Switch Cơ bản */
         .switch {
             position: relative;
             display: inline-block;
-            width: 60px;
-            height: 30px;
+            width: 50px;
+            height: 26px;
         }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
@@ -48,7 +48,7 @@
         .slider:before {
             position: absolute;
             content: "";
-            height: 22px; width: 22px;
+            height: 18px; width: 18px;
             left: 4px; bottom: 4px;
             background-color: white;
             transition: .4s;
@@ -56,7 +56,28 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         input:checked + .slider { background-color: #10b981; }
-        input:checked + .slider:before { transform: translateX(30px); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* Switch cho Lift (Lớn hơn) */
+        .switch-lg { width: 60px; height: 30px; }
+        .switch-lg .slider:before { height: 22px; width: 22px; left: 4px; bottom: 4px; }
+        .switch-lg input:checked + .slider:before { transform: translateX(30px); }
+
+        /* Nút Nguồn Tối Giản ở Sidebar */
+        .power-btn-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+        
+        .power-on { background-color: #10b981; color: white; }
+        .power-off { background-color: #94a3b8; color: #f1f5f9; }
 
         .btn-disabled {
             opacity: 0.2;
@@ -78,7 +99,7 @@
 </head>
 <body>
 
-    <!-- CUSTOM CONFIRM MODAL (Thay thế alert/confirm) -->
+    <!-- CUSTOM CONFIRM MODAL -->
     <div id="confirm-modal" class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm hidden animate-fade-in">
         <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-6 text-center animate-slide-up">
             <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -129,6 +150,7 @@
         </div>
         
         <div class="flex-1 p-4 space-y-2 overflow-y-auto" style="touch-action: pan-y;">
+            <!-- Bluetooth Status Section -->
             <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-4">
                 <div class="flex items-center justify-between">
                     <div class="flex flex-col">
@@ -156,6 +178,13 @@
                     Thông tin dự án
                 </button>
             </nav>
+        </div>
+
+        <!-- Nút Nguồn Hệ Thống Dưới Cùng -->
+        <div class="p-6 flex flex-col items-center border-t border-slate-50">
+            <button id="power-btn" onclick="togglePower()" class="power-btn-circle power-on active:scale-90">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
+            </button>
         </div>
         
         <div class="p-4 border-t border-slate-100 text-center">
@@ -197,7 +226,7 @@
                     <span class="text-slate-400 font-black text-[10px] uppercase tracking-wider">Trạng thái gầm</span>
                     <span id="lift-label" class="text-sm text-slate-800 font-black uppercase">Hạ gầm (Tắt)</span>
                 </div>
-                <label class="switch">
+                <label class="switch switch-lg">
                     <input type="checkbox" id="lift-toggle" onchange="onLiftChange()">
                     <span class="slider"></span>
                 </label>
@@ -262,6 +291,7 @@
         let device, characteristic;
         let isSending = false;
         let alarmDir = 'L';
+        let isPowerOn = true; // Mặc định ON
 
         function closeModal() { document.getElementById('intro-modal').classList.add('hidden'); }
         function openIntro() { document.getElementById('intro-modal').classList.remove('hidden'); toggleSidebar(); }
@@ -299,6 +329,20 @@
             const timeStr = now.toLocaleTimeString('en-GB');
             document.querySelectorAll('.rtc-display').forEach(el => el.innerText = timeStr);
         }, 1000);
+
+        // Logic Nguồn Hệ Thống (on/sl) với nút hình tròn
+        function togglePower() {
+            const btn = document.getElementById('power-btn');
+            isPowerOn = !isPowerOn;
+            
+            if (isPowerOn) {
+                btn.className = "power-btn-circle power-on active:scale-90";
+                sendCmd('on');
+            } else {
+                btn.className = "power-btn-circle power-off active:scale-90";
+                sendCmd('sl');
+            }
+        }
 
         // Nâng hạ gầm bằng Toggle
         function onLiftChange() {
@@ -338,7 +382,7 @@
         const connectBtn = document.getElementById('connect-btn');
         connectBtn.addEventListener('click', async () => {
             if (device && device.gatt.connected) {
-                showConfirm(); // Hiện modal xác nhận trước khi ngắt
+                showConfirm(); 
                 return;
             }
             try {
@@ -352,29 +396,33 @@
                 device.addEventListener('gattserverdisconnected', onDisconnected);
                 updateUI(true);
                 syncTime();
+                
+                // Gửi lệnh ON khi vừa kết nối xong và đồng bộ UI
+                setTimeout(() => {
+                    sendCmd('on');
+                    isPowerOn = true;
+                    document.getElementById('power-btn').className = "power-btn-circle power-on active:scale-90";
+                }, 500);
+
             } catch (err) { updateUI(false); }
         });
 
-        // Xử lý ngắt kết nối thực sự
         function showConfirm() { document.getElementById('confirm-modal').classList.remove('hidden'); }
         function hideConfirm() { document.getElementById('confirm-modal').classList.add('hidden'); }
 
         async function executeDisconnect() {
             hideConfirm();
             if (device && device.gatt.connected) {
-                // Tắt toggle UI nếu đang mở
                 const toggle = document.getElementById('lift-toggle');
                 if (toggle.checked) {
                     toggle.checked = false;
                     onLiftChange(); 
                 }
                 
-                // Gửi lệnh 'h' (Hạ gầm) và 'baibai' (Tạm biệt) về ESP32 trước khi ngắt
                 await sendCmd('h');
-                await new Promise(r => setTimeout(r, 100)); // Chờ một chút giữa các lệnh
+                await new Promise(r => setTimeout(r, 100));
                 await sendCmd('baibai');
                 
-                // Đợi lệnh được gửi đi hoàn tất trước khi ngắt kết nối vật lý
                 setTimeout(async () => {
                     await device.gatt.disconnect();
                 }, 400);
