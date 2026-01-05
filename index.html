@@ -250,11 +250,11 @@
                 </button>
             </nav>
         </div>
-        <div class="p-6 flex flex-col items-center border-t border-slate-50 relative">
+        <div class="p-6 flex flex-col items-center border-t border-slate-50 relative gap-3">
             <button id="power-btn" onclick="togglePower()" class="power-btn-circle power-on active:scale-90">
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
             </button>
-            <span class="absolute bottom-2 right-4 text-[7px] font-black text-slate-300 uppercase tracking-widest">v2.32.8</span>
+            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">v2.32.8</span>
         </div>
     </div>
 
@@ -568,12 +568,9 @@
         // Cập nhật ngày giờ
         function updateDateTime() {
             const now = new Date();
-            
-            // Cập nhật đồng hồ chính
             const timeStr = now.toLocaleTimeString('en-GB');
             document.querySelectorAll('.rtc-display').forEach(el => el.innerText = timeStr);
 
-            // Cập nhật ngày tháng năm
             const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
             const dayName = days[now.getDay()];
             const date = String(now.getDate()).padStart(2, '0');
@@ -584,7 +581,7 @@
             document.querySelectorAll('.date-display').forEach(el => el.innerText = dateStr);
         }
         setInterval(updateDateTime, 1000);
-        updateDateTime(); // Chạy ngay lập tức khi tải trang
+        updateDateTime();
 
         function togglePower() {
             const btn = document.getElementById('power-btn');
@@ -596,6 +593,17 @@
                 btn.className = "power-btn-circle power-off active:scale-90";
                 sendCmd('sl');
             }
+        }
+
+        function resetAllToggles() {
+            // Đưa toàn bộ nút gạt về OFF
+            const liftToggle = document.getElementById('lift-toggle');
+            const lightToggle = document.getElementById('light-toggle');
+            const sirenToggle = document.getElementById('siren-toggle');
+            
+            if (liftToggle.checked) { liftToggle.checked = false; onLiftChange(); }
+            if (lightToggle.checked) { lightToggle.checked = false; onLightChange(); }
+            if (sirenToggle.checked) { sirenToggle.checked = false; onSirenChange(); }
         }
 
         function onLiftChange() {
@@ -695,14 +703,17 @@
         async function executeDisconnect() {
             hideConfirm();
             if (device && device.gatt.connected) {
-                const toggle = document.getElementById('lift-toggle');
-                if (toggle.checked) { toggle.checked = false; onLiftChange(); }
+                // Tắt tất cả các nút trạng thái trước khi ngắt hoàn toàn
+                resetAllToggles();
                 await sendCmd('h');
                 setTimeout(async () => { await device.gatt.disconnect(); }, 400);
             }
         }
 
-        function onDisconnected() { updateUI(false); }
+        function onDisconnected() { 
+            updateUI(false); 
+            resetAllToggles(); // Đảm bảo UI khớp với trạng thái ngắt kết nối
+        }
 
         function updateUI(connected) {
             const dot = document.getElementById('status-dot');
