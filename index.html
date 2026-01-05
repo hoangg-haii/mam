@@ -88,8 +88,19 @@
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        
         .animate-fade-in { animation: fadeIn 0.2s ease-out; }
         .animate-slide-up { animation: slideUp 0.3s ease-out; }
+        .executing-cmd {
+            border: 2px solid #10b981 !important;
+            background-color: #ecfdf5 !important;
+            animation: pulse-green 2s infinite;
+        }
 
         .segmented-control {
             display: flex;
@@ -116,28 +127,6 @@
             color: #64748b;
         }
 
-        .day-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            font-size: 10px;
-            font-weight: 900;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            border: 1px solid #e2e8f0;
-            background: white;
-            color: #94a3b8;
-        }
-        .day-btn.active {
-            background: #4f46e5;
-            color: white;
-            border-color: #4f46e5;
-            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
-        }
-        
-        /* Custom scrollbar */
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
@@ -192,7 +181,7 @@
                     <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" alt="Logo" class="w-12 h-12 object-contain">
                 </div>
                 <h2 class="text-sm font-black uppercase tracking-tight leading-tight">Phần mềm điều khiển hệ thống dải phân cách tự động</h2>
-                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v3.35.09 • Dự án Khoa học kỹ thuật</p>
+                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v3.35.10 • Dự án Khoa học kỹ thuật</p>
             </div>
             <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                 <div class="space-y-3 text-sm text-slate-600 leading-relaxed">
@@ -259,7 +248,7 @@
             <button id="power-btn" onclick="togglePower()" class="power-btn-circle power-on active:scale-90">
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
             </button>
-            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">v3.35.09</span>
+            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">v3.35.10</span>
         </div>
     </div>
 
@@ -359,7 +348,7 @@
                 </div>
             </div>
 
-            <!-- DANH SÁCH LỆNH CHỜ (Khu vực mới cập nhật) -->
+            <!-- DANH SÁCH LỆNH CHỜ -->
             <div class="flex-1 bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                 <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
                     <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Danh sách lệnh chờ</h3>
@@ -434,7 +423,7 @@
         let isSending = false;
         let alarmDir = 'L';
         let isPowerOn = true;
-        let pendingCommands = []; // Array of {id, time, dir, raw}
+        let pendingCommands = []; // Array of {id, raw, isExecuting}
 
         function closeModal() { document.getElementById('intro-modal').classList.add('hidden'); }
         function openIntro() { document.getElementById('intro-modal').classList.remove('hidden'); toggleSidebar(); }
@@ -493,12 +482,11 @@
             }
 
             container.innerHTML = "";
-            // Sắp xếp theo thời gian hiển thị (thủ công trong JS)
             pendingCommands.sort((a, b) => a.raw.localeCompare(b.raw));
 
             pendingCommands.forEach(cmd => {
                 const item = document.createElement('div');
-                item.className = "flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100 animate-fade-in";
+                item.className = `flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100 transition-all duration-300 ${cmd.isExecuting ? 'executing-cmd' : 'animate-fade-in'}`;
                 
                 const timeStr = `${cmd.raw.substring(0,2)}:${cmd.raw.substring(2,4)}:${cmd.raw.substring(4,6)}`;
                 const dirStr = cmd.raw.endsWith('L') ? "Trái" : "Phải";
@@ -506,17 +494,18 @@
 
                 item.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm text-indigo-500">
+                        <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm ${cmd.isExecuting ? 'text-emerald-500' : 'text-indigo-500'}">
                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         </div>
                         <div class="flex flex-col">
                             <span class="text-[11px] font-black text-slate-800">${timeStr}</span>
-                            <span class="text-[8px] font-bold uppercase tracking-widest ${dirColor}">${dirStr}</span>
+                            <span class="text-[8px] font-bold uppercase tracking-widest ${cmd.isExecuting ? 'text-emerald-600' : dirColor}">${cmd.isExecuting ? 'Đang chạy...' : dirStr}</span>
                         </div>
                     </div>
+                    ${!cmd.isExecuting ? `
                     <button onclick="removeCommand('${cmd.id}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    </button>
+                    </button>` : ''}
                 `;
                 container.appendChild(item);
             });
@@ -526,14 +515,9 @@
             const index = pendingCommands.findIndex(c => c.id === id);
             if (index !== -1) {
                 const cmdToDel = pendingCommands[index].raw;
-                // Gửi lệnh xóa X[6 số][L/R]
                 await sendCmd('X' + cmdToDel);
                 pendingCommands.splice(index, 1);
                 updatePendingUI();
-                
-                const info = document.getElementById('alarm-info');
-                info.innerText = `Đã xóa lệnh: ${cmdToDel}`;
-                setTimeout(() => info.innerText = "", 3000);
             }
         }
 
@@ -567,9 +551,8 @@
 
                 for (let cmd of validLines) {
                     await sendCmd(cmd);
-                    // Add to local list if not exist
                     if (!pendingCommands.find(c => c.raw === cmd)) {
-                        pendingCommands.push({ id: crypto.randomUUID(), raw: cmd });
+                        pendingCommands.push({ id: crypto.randomUUID(), raw: cmd, isExecuting: false });
                     }
                     await new Promise(r => setTimeout(r, 150));
                 }
@@ -730,12 +713,44 @@
                 const server = await device.gatt.connect();
                 const service = await server.getPrimaryService(SERVICE_UUID);
                 characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+                
+                // Start notifications to receive data from ESP32
+                await characteristic.startNotifications();
+                characteristic.addEventListener('characteristicvaluechanged', handleIncomingData);
+                
                 device.addEventListener('gattserverdisconnected', onDisconnected);
                 updateUI(true);
                 syncTime();
                 setTimeout(() => { sendCmd('on'); isPowerOn = true; document.getElementById('power-btn').className = "power-btn-circle power-on active:scale-90"; }, 500);
             } catch (err) { updateUI(false); }
         });
+
+        // XỬ LÝ DỮ LIỆU NHẬN ĐƯỢC TỪ ESP32
+        function handleIncomingData(event) {
+            const value = new TextDecoder().decode(event.target.value).trim();
+            if (!value) return;
+
+            console.log("ESP32:", value);
+
+            // Xử lý lệnh Đ (Đang thực hiện)
+            if (value.startsWith('Đ')) {
+                const targetCmd = value.substring(1); // Lấy phần định dạng thời gian
+                pendingCommands.forEach(cmd => {
+                    if (cmd.raw === targetCmd) cmd.isExecuting = true;
+                });
+                updatePendingUI();
+            }
+            
+            // Xử lý lệnh E (Xóa lệnh hoàn thành)
+            if (value.startsWith('E')) {
+                const targetCmd = value.substring(1);
+                const index = pendingCommands.findIndex(c => c.raw === targetCmd);
+                if (index !== -1) {
+                    pendingCommands.splice(index, 1);
+                    updatePendingUI();
+                }
+            }
+        }
 
         function showConfirm() { document.getElementById('confirm-modal').classList.remove('hidden'); }
         function hideConfirm() { document.getElementById('confirm-modal').classList.add('hidden'); }
@@ -754,7 +769,7 @@
         function onDisconnected() { 
             updateUI(false); 
             resetAllTogglesToOff();
-            pendingCommands = []; // Reset list when disconnected
+            pendingCommands = []; 
             updatePendingUI();
         }
 
@@ -802,9 +817,8 @@
             
             sendCmd(fullCmd);
             
-            // Add to pending list
             if (!pendingCommands.find(c => c.raw === fullCmd)) {
-                pendingCommands.push({ id: crypto.randomUUID(), raw: fullCmd });
+                pendingCommands.push({ id: crypto.randomUUID(), raw: fullCmd, isExecuting: false });
                 updatePendingUI();
             }
 
