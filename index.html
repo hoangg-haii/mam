@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Hệ thống dải phân cách tự động v3.36.00</title>
+    <title>Hệ thống dải phân cách tự động v3.45.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     
@@ -58,8 +58,31 @@
             border-radius: 10px; cursor: pointer; transition: all 0.2s; text-transform: uppercase;
         }
         .segmented-item.active { background-color: white; color: var(--primary); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+
+        /* Executing Highlight */
+        .executing {
+            border: 2px solid var(--success) !important;
+            background-color: #f0fdf4 !important;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+            animation: pulse-active 2s infinite;
+        }
+        .dark-mode .executing { background-color: #064e3b !important; }
+        @keyframes pulse-active {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        
+        /* List Collapse */
+        #pending-list.collapsed { max-height: 120px; overflow: hidden; position: relative; }
+        #pending-list.collapsed::after {
+            content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
+            background: linear-gradient(transparent, #f8fafc); pointer-events: none;
+        }
+        .dark-mode #pending-list.collapsed::after { background: linear-gradient(transparent, #020617); }
     </style>
 </head>
 <body class="flex flex-col items-center">
@@ -72,7 +95,7 @@
                     <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" alt="Logo" class="w-14 h-14 object-contain">
                 </div>
                 <h2 class="text-lg font-black uppercase tracking-tight">Dự án dải phân cách</h2>
-                <p class="text-[10px] font-bold opacity-80 uppercase tracking-[0.3em] mt-2">Phiên bản v3.36.00</p>
+                <p class="text-[10px] font-bold opacity-80 uppercase tracking-[0.3em] mt-2">Phiên bản v3.45.0</p>
             </div>
             <div class="p-8 space-y-6 max-h-[60vh] overflow-y-auto custom-scroll">
                 <div class="space-y-4">
@@ -89,15 +112,15 @@
                         <span class="text-indigo-700 font-black text-xs uppercase">Trường THPT Trần Quý Cáp</span>
                     </div>
                 </div>
-                <button onclick="closeModal('intro-modal')" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-xs shadow-xl active:scale-95 transition-all uppercase tracking-[0.2em]">Bắt đầu điều khiển</button>
+                <button onclick="closeModal('intro-modal')" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-xs shadow-xl active:scale-95 transition-all uppercase tracking-[0.2em]">Bắt đầu</button>
             </div>
         </div>
     </div>
 
-    <!-- SETTINGS MODAL (DARK MODE) -->
+    <!-- SETTINGS MODAL -->
     <div id="settings-modal" class="fixed inset-0 z-[130] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm hidden" onclick="closeModal('settings-modal')">
         <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl overflow-hidden modal-enter p-8" onclick="event.stopPropagation()">
-            <h3 class="text-sm font-black text-slate-900 uppercase mb-6 text-center">Cài đặt ứng dụng</h3>
+            <h3 class="text-sm font-black text-slate-900 uppercase mb-6 text-center">Cài đặt</h3>
             <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border">
                 <span class="text-[11px] font-black uppercase text-slate-700">Giao diện tối</span>
                 <label class="switch">
@@ -106,18 +129,6 @@
                 </label>
             </div>
             <button onclick="closeModal('settings-modal')" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest mt-6">Đóng</button>
-        </div>
-    </div>
-
-    <!-- GUIDE POPUP MODAL -->
-    <div id="guide-popup" class="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm hidden" onclick="closeModal('guide-popup')">
-        <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl overflow-hidden modal-enter p-8 text-center" onclick="event.stopPropagation()">
-            <div id="guide-icon" class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            </div>
-            <h3 id="guide-title" class="text-sm font-black text-slate-900 uppercase mb-3">Tiêu đề</h3>
-            <div id="guide-content" class="text-slate-600 text-[11px] font-medium leading-relaxed mb-6 text-left space-y-2"></div>
-            <button onclick="closeModal('guide-popup')" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest">Đã hiểu</button>
         </div>
     </div>
 
@@ -140,112 +151,138 @@
                 <button id="connect-btn" onclick="handleBluetoothConnection()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase active:scale-90">Kết nối</button>
             </div>
 
-            <!-- NÚT NGÀY/ ĐÊM ESP (ICON ĐƠN LẺ NẰM GIỮA) -->
             <div class="py-4 border-b flex justify-center">
                 <button id="menu-day-night-btn" onclick="toggleEspDayNight()" class="text-amber-500 transition-all active:scale-75 p-3 rounded-full hover:bg-slate-50">
                     <svg id="esp-mode-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <!-- Sun Icon (Default) -->
                         <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                     </svg>
                 </button>
             </div>
             
             <nav class="space-y-2 pt-2 flex-1">
-                <button onclick="showPage('control')" class="nav-item w-full p-4 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-[11px] uppercase text-left transition-all">Bảng điều khiển</button>
-                <button onclick="showPage('alarm')" class="nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all">Lịch trình</button>
-                <button onclick="showPage('warning')" class="nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all">Cảnh báo</button>
-                <button onclick="showPage('guide')" class="nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all">Hướng dẫn sử dụng</button>
+                <button id="nav-alarm" onclick="showPage('alarm')" class="nav-item w-full p-4 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-[11px] uppercase text-left transition-all">Lịch trình (Auto)</button>
+                <button id="nav-control" onclick="showPage('control')" class="nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all">Bảng điều khiển</button>
+                <button id="nav-warning" onclick="showPage('warning')" class="nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all">Cảnh báo</button>
+                <button id="nav-guide" onclick="showPage('guide')" class="nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all">Hướng dẫn</button>
             </nav>
 
             <div class="pt-6 border-t flex flex-col items-center">
                 <button onclick="openIntro()" class="text-slate-400 font-bold text-[10px] uppercase italic mb-4">Thông tin dự án</button>
-                <div class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] bg-slate-50 px-4 py-2 rounded-full border">Version 3.36.00</div>
+                <div class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] bg-slate-50 px-4 py-2 rounded-full border">Version 3.45.0</div>
             </div>
         </div>
     </div>
 
-    <!-- MAIN APP -->
+    <!-- HEADER -->
     <header class="w-full flex items-center justify-between p-6 z-50">
-        <button onclick="toggleSidebar()" class="p-3.5 bg-white shadow-md rounded-2xl text-slate-800"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-        <h1 id="page-title" class="text-[11px] font-black text-slate-900 uppercase tracking-widest text-center flex-1 mx-4">Bảng điều khiển</h1>
+        <button onclick="toggleSidebar()" class="p-3.5 bg-white shadow-md rounded-2xl text-slate-800 transition-all active:scale-90 border">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <h1 id="page-title" class="text-[11px] font-black text-slate-900 uppercase tracking-widest text-center flex-1 mx-4">Lịch trình</h1>
         <button onclick="document.getElementById('settings-modal').classList.remove('hidden')" class="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center active:scale-90 transition-transform">
-            <svg class="text-indigo-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <svg class="text-indigo-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 2 2-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
     </header>
 
     <main class="w-full max-w-md px-6 flex-1 flex flex-col overflow-hidden pb-10">
-        <!-- CONTROL PAGE -->
-        <div id="page-control" class="space-y-6 flex flex-col h-full overflow-hidden">
-            <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border-b-[6px] border-slate-950 text-center relative overflow-hidden">
-                <div class="rtc-display text-5xl font-['JetBrains_Mono'] font-bold text-emerald-400 leading-none relative z-10">00:00:00</div>
-                <div class="date-display text-[9px] font-black text-emerald-600/60 uppercase mt-3 relative z-10 tracking-[0.3em]">CẬP NHẬT THỜI GIAN...</div>
-            </div>
-            
-            <div class="bg-white p-2 rounded-2xl border flex-none">
-                <div class="segmented-control">
-                    <div id="mode-auto" class="segmented-item active" onclick="setMode('auto')">Tự động</div>
-                    <div id="mode-manual" class="segmented-item" onclick="setMode('manual')">Thủ công</div>
-                </div>
-            </div>
-
-            <div class="flex-1 flex flex-col justify-center gap-6">
-                <div id="manual-ui" class="hidden grid grid-cols-3 gap-4">
-                    <button data-cmd="1" class="momentary-btn h-20 bg-white border-2 rounded-[1.8rem] font-black text-xl text-slate-800">L1</button>
-                    <button data-cmd="t" class="momentary-btn h-20 bg-slate-900 text-white rounded-[1.8rem] flex items-center justify-center shadow-lg"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m18 15-6-6-6 6"/></svg></button>
-                    <button data-cmd="3" class="momentary-btn h-20 bg-white border-2 rounded-[1.8rem] font-black text-xl text-slate-800">R1</button>
-                    <button data-cmd="2" class="momentary-btn h-20 bg-white border-2 rounded-[1.8rem] font-black text-xl text-slate-800">L2</button>
-                    <button data-cmd="l" class="momentary-btn h-20 bg-slate-900 text-white rounded-[1.8rem] flex items-center justify-center shadow-lg"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m6 9 6 6 6-6"/></svg></button>
-                    <button data-cmd="4" class="momentary-btn h-20 bg-white border-2 rounded-[1.8rem] font-black text-xl text-slate-800">R2</button>
-                </div>
-                <div id="auto-ui-placeholder" class="text-center py-12 px-6 border-2 border-dashed rounded-[2.5rem] space-y-3">
-                    <div class="text-slate-400 font-black text-xs uppercase italic">Chế độ tự động</div>
-                    <p class="text-[10px] text-slate-400">Hệ thống đang hoạt động theo lịch trình sẵn có.</p>
-                </div>
-                <button onclick="send('dkc')" class="w-full bg-rose-600 text-white py-6 rounded-[2.2rem] font-black text-xs uppercase shadow-xl border-b-[6px] border-rose-800 active:border-b-0 active:translate-y-1">Dừng khẩn cấp</button>
+        
+        <!-- MODALITY SYNC (Chế độ dùng chung cho Alarm và Control) -->
+        <div class="bg-white p-2 mb-6 rounded-2xl border flex-none shadow-sm">
+            <div class="segmented-control">
+                <div id="global-mode-auto" class="segmented-item active" onclick="setGlobalMode('auto')">Tự động</div>
+                <div id="global-mode-manual" class="segmented-item" onclick="setGlobalMode('manual')">Thủ công</div>
             </div>
         </div>
 
-        <!-- ALARM PAGE -->
-        <div id="page-alarm" class="hidden h-full flex flex-col space-y-6 overflow-hidden">
-            <div class="bg-white p-6 rounded-[2rem] border shadow-sm space-y-6">
+        <!-- ALARM PAGE (Tab Mặc định) -->
+        <div id="page-alarm" class="h-full flex flex-col space-y-6 overflow-hidden">
+            <!-- Đồng hồ hiện tại đã được thêm vào đây -->
+            <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border-b-[6px] border-slate-950 text-center relative overflow-hidden flex-none">
+                <div class="rtc-display text-5xl font-['JetBrains_Mono'] font-bold text-emerald-400 leading-none relative z-10">00:00:00</div>
+                <div class="date-display text-[9px] font-black text-emerald-600/60 uppercase mt-3 relative z-10 tracking-[0.3em]">CẬP NHẬT THỜI GIAN...</div>
+            </div>
+
+            <div id="alarm-config" class="bg-white p-6 rounded-[2rem] border shadow-sm space-y-6 flex-none">
                 <div class="segmented-control">
                     <div id="in-manual" class="segmented-item active" onclick="setIn('manual')">Nhập tay</div>
                     <div id="in-file" class="segmented-item" onclick="setIn('file')">Nạp file</div>
                 </div>
+                
                 <div id="alarm-manual-ui" class="space-y-6">
-                    <input type="time" id="alarm-time" step="1" class="w-full text-5xl font-['JetBrains_Mono'] font-black bg-slate-50 rounded-3xl py-6 text-center outline-none">
+                    <input type="time" id="alarm-time" step="1" class="w-full text-5xl font-['JetBrains_Mono'] font-black bg-slate-50 rounded-3xl py-6 text-center outline-none border focus:border-indigo-500">
                     <div class="flex gap-3">
                         <button id="dir-L" onclick="setDir('L')" class="flex-1 py-4 rounded-2xl font-black text-[11px] uppercase bg-slate-100">Trái</button>
                         <button id="dir-R" onclick="setDir('R')" class="flex-1 py-4 rounded-2xl font-black text-[11px] uppercase bg-slate-100">Phải</button>
                     </div>
-                    <button onclick="addAlarm()" class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-[11px]">Thiết lập</button>
+                    <button onclick="addAlarm()" class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-[11px] shadow-lg active:scale-95 transition-all">Thiết lập mốc giờ</button>
                 </div>
+
                 <div id="alarm-file-ui" class="hidden py-4 text-center">
-                    <label class="flex flex-col items-center p-10 bg-slate-50 border-2 border-dashed rounded-[2rem] cursor-pointer">
+                    <label class="flex flex-col items-center p-10 bg-slate-50 border-2 border-dashed rounded-[2rem] cursor-pointer hover:bg-slate-100 transition-all">
                         <svg class="text-slate-400 mb-2" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                        <span class="text-[10px] font-black uppercase">Tải tệp .txt</span>
+                        <span class="text-[10px] font-black uppercase">Tải tệp .txt lịch trình</span>
                         <input type="file" class="hidden" accept=".txt" onchange="uploadFile(event)">
                     </label>
                 </div>
             </div>
-            <div id="pending-list" class="flex-1 overflow-y-auto space-y-3 custom-scroll">
-                <div class="text-center py-10 opacity-20 italic text-xs font-bold">Chưa có lịch trình</div>
+
+            <div class="flex items-center justify-between px-2 flex-none">
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Danh sách</span>
+                    <button id="btn-toggle-list" onclick="toggleList()" class="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-[9px] font-black uppercase">Thu gọn</button>
+                </div>
+                <button onclick="clearAllAlarms()" class="text-[9px] font-black text-rose-500 uppercase hover:underline">Xóa tất cả</button>
+            </div>
+
+            <div id="pending-list" class="flex-1 overflow-y-auto space-y-3 custom-scroll pb-4">
+                <div class="text-center py-10 opacity-20 italic text-xs font-bold uppercase tracking-widest">Chưa có lịch trình</div>
+            </div>
+        </div>
+
+        <!-- CONTROL PAGE -->
+        <div id="page-control" class="hidden space-y-6 flex flex-col h-full overflow-hidden">
+            <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border-b-[6px] border-slate-950 text-center relative overflow-hidden">
+                <div class="rtc-display text-5xl font-['JetBrains_Mono'] font-bold text-emerald-400 leading-none relative z-10">00:00:00</div>
+                <div class="date-display text-[9px] font-black text-emerald-600/60 uppercase mt-3 relative z-10 tracking-[0.3em]">CẬP NHẬT THỜI GIAN...</div>
+            </div>
+
+            <div class="flex-1 flex flex-col justify-center gap-6">
+                <!-- UI cho Manual -->
+                <div id="manual-controls" class="hidden grid grid-cols-3 gap-4">
+                    <button data-cmd="1" class="momentary-btn h-20 bg-white border-2 rounded-[1.8rem] font-black text-xl text-slate-800 active:scale-95 transition-all">L1</button>
+                    <button data-cmd="t" class="momentary-btn h-20 bg-slate-900 text-white rounded-[1.8rem] flex items-center justify-center shadow-lg active:scale-95 transition-all"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m18 15-6-6-6 6"/></svg></button>
+                    <button data-cmd="3" class="momentary-btn h-20 bg-white border-2 rounded-[1.8rem] font-black text-xl text-slate-800 active:scale-95 transition-all">R1</button>
+                    <button data-cmd="2" class="momentary-btn h-20 bg-white border-2 rounded-[1.8rem] font-black text-xl text-slate-800 active:scale-95 transition-all">L2</button>
+                    <button data-cmd="l" class="momentary-btn h-20 bg-slate-900 text-white rounded-[1.8rem] flex items-center justify-center shadow-lg active:scale-95 transition-all"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m6 9 6 6 6-6"/></svg></button>
+                    <button data-cmd="4" class="momentary-btn h-20 bg-white border-2 rounded-[1.8rem] font-black text-xl text-slate-800 active:scale-95 transition-all">R2</button>
+                </div>
+                
+                <!-- Placeholder cho Auto -->
+                <div id="auto-controls-placeholder" class="text-center py-12 px-6 border-2 border-dashed rounded-[2.5rem] space-y-4">
+                    <div class="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                    </div>
+                    <div class="text-slate-500 font-black text-xs uppercase italic tracking-widest">Chế độ Tự động</div>
+                    <p class="text-[10px] text-slate-400 font-medium">Hệ thống vận hành theo lịch trình. Chuyển sang "Thủ công" để điều khiển trực tiếp.</p>
+                </div>
+
+                <button onclick="send('dkc')" class="w-full bg-rose-600 text-white py-6 rounded-[2.2rem] font-black text-xs uppercase shadow-xl border-b-[6px] border-rose-800 active:border-b-0 active:translate-y-1 transition-all">Dừng khẩn cấp</button>
             </div>
         </div>
 
         <!-- WARNING PAGE -->
         <div id="page-warning" class="hidden h-full flex flex-col space-y-6">
-            <div class="bg-rose-50 border-2 border-rose-100 p-8 rounded-[2.5rem] text-center"><div class="text-rose-600 text-3xl font-black uppercase italic tracking-tighter">Emergency</div></div>
+            <div class="bg-rose-50 border-2 border-rose-100 p-8 rounded-[2.5rem] text-center shadow-inner"><div class="text-rose-600 text-3xl font-black uppercase italic tracking-tighter">Emergency</div></div>
             <div class="space-y-4">
-                <div class="bg-white p-7 rounded-3xl border flex items-center justify-between">
+                <div class="bg-white p-7 rounded-3xl border flex items-center justify-between shadow-sm">
                     <span class="font-black text-xs uppercase text-slate-700">Đèn cảnh báo</span>
                     <label class="switch"><input type="checkbox" onchange="send(this.checked?'cbon':'cboff')"><span class="slider"></span></label>
                 </div>
-                <div class="bg-white p-7 rounded-3xl border flex items-center justify-between">
+                <div class="bg-white p-7 rounded-3xl border flex items-center justify-between shadow-sm">
                     <span class="font-black text-xs uppercase text-slate-700">Còi báo động</span>
                     <label class="switch"><input type="checkbox" onchange="send(this.checked?'ccbn':'ccbf')"><span class="slider"></span></label>
                 </div>
-                <button onclick="emergency()" class="w-full bg-gradient-to-r from-rose-600 to-rose-500 text-white py-7 rounded-[2.2rem] font-black text-xs uppercase shadow-xl active:scale-95">Kích hoạt toàn diện</button>
+                <button onclick="emergency()" class="w-full bg-gradient-to-r from-rose-600 to-rose-500 text-white py-7 rounded-[2.2rem] font-black text-xs uppercase shadow-xl active:scale-95 transition-all">Kích hoạt toàn diện</button>
             </div>
         </div>
 
@@ -253,28 +290,16 @@
         <div id="page-guide" class="hidden h-full flex flex-col space-y-4 overflow-y-auto custom-scroll pr-2">
             <div class="bg-indigo-600 p-6 rounded-[2rem] text-white">
                 <h3 class="font-black text-lg uppercase mb-1">Hướng dẫn nhanh</h3>
-                <p class="text-[10px] opacity-80 uppercase tracking-widest font-bold">Nhấn vào mục để xem chi tiết</p>
+                <p class="text-[10px] opacity-80 uppercase tracking-widest font-bold">Dự án dải phân cách thông minh</p>
             </div>
             <div class="space-y-3">
-                <div onclick="openGuide('connect')" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 cursor-pointer active:scale-95 transition-all">
-                    <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-black text-xs">01</div>
-                    <span class="font-black text-[11px] uppercase text-slate-800">Kết nối thiết bị</span>
+                <div class="bg-white p-5 rounded-3xl border shadow-sm">
+                    <span class="font-black text-[11px] uppercase text-indigo-600 block mb-2">Chế độ tự động</span>
+                    <p class="text-[10px] text-slate-500 font-medium">Hệ thống mặc định hạ gầm để xe chạy qua dải phân cách khi đúng giờ hẹn.</p>
                 </div>
-                <div onclick="openGuide('operation')" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 cursor-pointer active:scale-95 transition-all">
-                    <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-black text-xs">02</div>
-                    <span class="font-black text-[11px] uppercase text-slate-800">Chế độ vận hành & Lịch trình</span>
-                </div>
-                <div onclick="openGuide('alarm')" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 cursor-pointer active:scale-95 transition-all">
-                    <div class="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-black text-xs">03</div>
-                    <span class="font-black text-[11px] uppercase text-slate-800">Cảnh báo khẩn cấp</span>
-                </div>
-                <div onclick="openGuide('daynight')" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 cursor-pointer active:scale-95 transition-all">
-                    <div class="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center font-black text-xs">04</div>
-                    <span class="font-black text-[11px] uppercase text-slate-800">Chế độ Ngày/Đêm</span>
-                </div>
-                <div onclick="openGuide('stop')" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 cursor-pointer active:scale-95 transition-all">
-                    <div class="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center font-black text-xs">05</div>
-                    <span class="font-black text-[11px] uppercase text-rose-600">Dừng khẩn cấp</span>
+                <div class="bg-white p-5 rounded-3xl border shadow-sm">
+                    <span class="font-black text-[11px] uppercase text-amber-600 block mb-2">Chế độ thủ công</span>
+                    <p class="text-[10px] text-slate-500 font-medium">Hệ thống sẽ nâng gầm lên và cho phép bạn điều khiển các hướng di chuyển bằng phím bấm.</p>
                 </div>
             </div>
         </div>
@@ -286,9 +311,9 @@
             <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
-            <h2 class="text-2xl font-black text-slate-900 uppercase leading-none mb-2">Cảm ơn bạn!</h2>
-            <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">Hệ thống đã hạ gầm an toàn và ngắt kết nối thành công. Hẹn gặp lại!</p>
-            <button onclick="location.reload()" class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg">Đóng ứng dụng</button>
+            <h2 class="text-2xl font-black text-slate-900 uppercase leading-none mb-2">Cảm ơn!</h2>
+            <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">Dải phân cách đã hạ gầm và ngắt kết nối an toàn.</p>
+            <button onclick="location.reload()" class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg">Khởi động lại</button>
         </div>
     </div>
 
@@ -296,29 +321,51 @@
         const UUID_SER = "0000ffe0-0000-1000-8000-00805f9b34fb";
         const UUID_CHA = "0000ffe1-0000-1000-8000-00805f9b34fb";
         let device, char, isBusy = false, espNight = false, dir = 'L';
+        let alarms = []; 
+        let currentMode = 'auto'; // 'auto' | 'manual'
 
-        // -- DARK MODE LOGIC (APP UI) --
+        // -- DARK MODE --
         function toggleAppDarkMode(enabled) {
             document.body.classList.toggle('dark-mode', enabled);
             localStorage.setItem('esp32AppDark', enabled);
         }
 
-        // -- ESP DAY/NIGHT LOGIC (COMMANDS) --
+        // -- ESP DAY/NIGHT --
         function toggleEspDayNight() {
             espNight = !espNight;
             const btn = document.getElementById('menu-day-night-btn');
             const icon = document.getElementById('esp-mode-icon');
-            
             if (espNight) {
                 send('dem');
                 btn.className = "text-indigo-500 transition-all active:scale-75 p-3 rounded-full hover:bg-slate-50";
-                // Moon Icon
                 icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"></path>';
             } else {
                 send('ngay');
                 btn.className = "text-amber-500 transition-all active:scale-75 p-3 rounded-full hover:bg-slate-50";
-                // Sun Icon
                 icon.innerHTML = '<circle cx="12" cy="12" r="5" fill="currentColor"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+            }
+        }
+
+        // -- GLOBAL MODE SYNC --
+        function setGlobalMode(mode) {
+            if (currentMode === mode) return;
+            currentMode = mode;
+            
+            // Cập nhật UI Switch
+            document.getElementById('global-mode-auto').classList.toggle('active', mode === 'auto');
+            document.getElementById('global-mode-manual').classList.toggle('active', mode === 'manual');
+            
+            // Cập nhật UI Control Page
+            document.getElementById('manual-controls').classList.toggle('hidden', mode !== 'manual');
+            document.getElementById('auto-controls-placeholder').classList.toggle('hidden', mode !== 'auto');
+
+            // Gửi lệnh & Chuyển tab
+            if (mode === 'auto') {
+                send('h'); // Tự động -> Hạ gầm
+                showPage('alarm'); // Tự động chuyển qua tab Lịch trình
+            } else {
+                send('n'); // Thủ công -> Nâng gầm
+                showPage('control'); // Tự động chuyển qua tab Điều khiển
             }
         }
 
@@ -326,8 +373,8 @@
         async function handleBluetoothConnection() {
             if (device?.gatt.connected) {
                 try {
-                    updateSt("Đang xử lý...");
-                    await send('h'); await sleep(500); await send('baibai'); await sleep(500);
+                    updateSt("Đang ngắt...");
+                    await send('h'); await sleep(300); await send('baibai');
                     document.getElementById('thanks-modal').classList.remove('hidden');
                     await device.gatt.disconnect();
                 } catch (e) { location.reload(); }
@@ -350,10 +397,10 @@
             if (!char || isBusy) return;
             isBusy = true;
             try { await char.writeValue(new TextEncoder().encode(c + "\n")); } catch(e){}
-            setTimeout(() => isBusy = false, 50);
+            setTimeout(() => isBusy = false, 80);
         }
 
-        // -- UI NAV --
+        // -- UI NAVIGATION --
         function toggleSidebar() {
             const s = document.getElementById('sidebar'), o = document.getElementById('overlay');
             const open = s.style.transform === 'translateX(0%)';
@@ -363,34 +410,21 @@
         }
 
         function showPage(p) {
-            ['control', 'alarm', 'warning', 'guide'].forEach(id => document.getElementById('page-'+id)?.classList.toggle('hidden', id !== p));
+            ['control', 'alarm', 'warning', 'guide'].forEach(id => {
+                const el = document.getElementById('page-'+id);
+                if (el) el.classList.toggle('hidden', id !== p);
+            });
             const t = { control: 'Bảng điều khiển', alarm: 'Lịch trình', warning: 'Cảnh báo khẩn cấp', guide: 'Hướng dẫn sử dụng' };
             document.getElementById('page-title').innerText = t[p].toUpperCase();
-            if (window.innerWidth < 768) toggleSidebar();
-        }
+            
+            // Update Navigation Menu Active State
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.className = btn.id === 'nav-'+p ? 
+                    "nav-item w-full p-4 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-[11px] uppercase text-left transition-all" : 
+                    "nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all";
+            });
 
-        function openGuide(type) {
-            const popup = document.getElementById('guide-popup');
-            const title = document.getElementById('guide-title');
-            const content = document.getElementById('guide-content');
-            const guides = {
-                'connect': { t: 'Kết nối thiết bị', c: '<p>1. Mở menu và nhấn nút <b>Kết nối</b>.</p><p>2. Chọn <b>ESP32_Motor_Control</b>.</p>' },
-                'operation': { t: 'Vận hành & Lịch trình', c: '<p><b>• Tự động:</b> Chạy theo giờ cài đặt.</p><p><b>• Thủ công:</b> Điều khiển từng motor bằng nút bấm.</p>' },
-                'alarm': { t: 'Cảnh báo khẩn cấp', c: '<p>Bật đèn và còi báo động khi có xe ưu tiên hoặc sự cố.</p>' },
-                'daynight': { t: 'Chế độ Ngày/Đêm', c: '<p>Tối ưu hoạt động: Ban ngày (tốc độ), Ban đêm (yên tĩnh & giảm sáng).</p>' },
-                'stop': { t: 'Dừng khẩn cấp', c: '<p>Ngắt nguồn ngay lập tức khi phát hiện vật cản nguy hiểm.</p>' }
-            };
-            title.innerText = guides[type].t;
-            content.innerHTML = guides[type].c;
-            popup.classList.remove('hidden');
-        }
-
-        function setMode(m) {
-            document.getElementById('mode-auto').classList.toggle('active', m === 'auto');
-            document.getElementById('mode-manual').classList.toggle('active', m === 'manual');
-            document.getElementById('manual-ui').classList.toggle('hidden', m !== 'manual');
-            document.getElementById('auto-ui-placeholder').classList.toggle('hidden', m !== 'auto');
-            send(m === 'manual' ? 'n' : 'h');
+            if (window.innerWidth < 768 && document.getElementById('sidebar').style.transform === 'translateX(0%)') toggleSidebar();
         }
 
         function setIn(m) {
@@ -402,60 +436,141 @@
 
         function setDir(d) {
             dir = d;
-            ['L', 'R'].forEach(id => document.getElementById('dir-'+id).className = `flex-1 py-4 rounded-2xl font-black text-[11px] uppercase ${dir === id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`);
+            ['L', 'R'].forEach(id => document.getElementById('dir-'+id).className = `flex-1 py-4 rounded-2xl font-black text-[11px] uppercase ${dir === id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-400'}`);
+        }
+
+        // -- ALARM MANAGEMENT --
+        function toggleList() {
+            const list = document.getElementById('pending-list');
+            const btn = document.getElementById('btn-toggle-list');
+            const isCollapsed = list.classList.toggle('collapsed');
+            btn.innerText = isCollapsed ? 'Mở rộng' : 'Thu gọn';
         }
 
         function addAlarm() {
-            const t = document.getElementById('alarm-time').value;
-            if (!t) return;
-            send(t.replace(/:/g, '') + dir);
-            hist(t, dir);
+            const timeVal = document.getElementById('alarm-time').value;
+            if (!timeVal) return;
+            const id = Date.now().toString();
+            const cmd = timeVal.replace(/:/g, '') + dir;
+            send(cmd);
+            alarms.push({ id, time: timeVal, dir: dir, cmd: cmd });
+            renderAlarms();
         }
 
-        function hist(t, d) {
-            const l = document.getElementById('pending-list');
-            if (l.querySelector('.italic')) l.innerHTML = '';
-            const item = document.createElement('div');
-            item.className = "flex justify-between items-center p-5 bg-white rounded-3xl border shadow-sm";
-            item.innerHTML = `<div><div class="font-black text-xs">${t}</div><div class="text-[8px] font-bold text-slate-400">HƯỚNG: ${d==='L'?'TRÁI':'PHẢI'}</div></div><div class="px-2 py-1 bg-emerald-50 text-emerald-600 text-[8px] font-black rounded">OK</div>`;
-            l.prepend(item);
+        function deleteAlarm(id) {
+            alarms = alarms.filter(a => a.id !== id);
+            renderAlarms();
         }
 
-        function uploadFile(e) {
-            const f = e.target.files[0]; if (!f) return;
-            const r = new FileReader();
-            r.onload = async (ev) => {
-                for (let l of ev.target.result.split('\n')) {
-                    const c = l.trim().toUpperCase();
-                    if (c.length === 7) { await send(c); hist(`${c.substring(0,2)}:${c.substring(2,4)}:${c.substring(4,6)}`, c.charAt(6)); await sleep(300); }
+        function clearAllAlarms() {
+            alarms = [];
+            renderAlarms();
+        }
+
+        function renderAlarms() {
+            const list = document.getElementById('pending-list');
+            if (alarms.length === 0) {
+                list.innerHTML = '<div class="text-center py-10 opacity-20 italic text-xs font-bold uppercase tracking-widest">Chưa có lịch trình</div>';
+                return;
+            }
+
+            const now = new Date();
+            const nowStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+            alarms.sort((a, b) => a.time.localeCompare(b.time));
+
+            list.innerHTML = '';
+            alarms.forEach(a => {
+                const isExecuting = nowStr >= a.time && nowStr <= addSecondsToTime(a.time, 15);
+                const item = document.createElement('div');
+                item.className = `flex justify-between items-center p-5 bg-white rounded-3xl border shadow-sm transition-all ${isExecuting ? 'executing scale-[1.02]' : ''}`;
+                item.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="flex flex-col">
+                            <div class="font-['JetBrains_Mono'] font-black text-sm text-slate-800">${a.time}</div>
+                            <div class="text-[8px] font-black text-slate-400 uppercase tracking-tighter">PHÍA: ${a.dir === 'L' ? 'TRÁI' : 'PHẢI'}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        ${isExecuting ? '<div class="px-2 py-1 bg-emerald-100 text-emerald-600 text-[8px] font-black rounded uppercase">Đang chạy</div>' : ''}
+                        <button onclick="deleteAlarm('${a.id}')" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function addSecondsToTime(timeStr, secs) {
+            const [h, m, s] = timeStr.split(':').map(Number);
+            const date = new Date(); date.setHours(h, m, s + secs);
+            return `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}:${String(date.getSeconds()).padStart(2,'0')}`;
+        }
+
+        async function uploadFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                const lines = ev.target.result.split('\n');
+                for (let line of lines) {
+                    const raw = line.trim().toUpperCase();
+                    if (raw.length === 7) {
+                        const time = `${raw.substring(0,2)}:${raw.substring(2,4)}:${raw.substring(4,6)}`;
+                        const dirFile = raw.charAt(6);
+                        await send(raw);
+                        alarms.push({ id: Date.now() + Math.random(), time, dir: dirFile, cmd: raw });
+                        await sleep(150);
+                    }
                 }
+                renderAlarms();
             };
-            r.readAsText(f);
+            reader.readAsText(file);
         }
 
+        // -- HELPERS --
         function updateSt(t) { document.getElementById('status-label').innerText = t.toUpperCase(); }
         function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function openIntro() { document.getElementById('intro-modal').classList.remove('hidden'); if (window.innerWidth < 768) toggleSidebar(); }
+        function openIntro() { document.getElementById('intro-modal').classList.remove('hidden'); if (document.getElementById('sidebar').style.transform === 'translateX(0%)') toggleSidebar(); }
         function emergency() { send('cbon'); setTimeout(() => send('ccbn'), 100); }
 
+        // -- CLOCK & RUNTIME --
+        setInterval(() => {
+            const d = new Date();
+            const timeStr = d.toLocaleTimeString('en-GB');
+            document.querySelectorAll('.rtc-display').forEach(el => el.innerText = timeStr);
+            document.querySelectorAll('.date-display').forEach(el => el.innerText = d.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase());
+            
+            // Check list execution every second
+            if (!document.getElementById('page-alarm').classList.contains('hidden')) {
+                renderAlarms();
+            }
+        }, 1000);
+
+        // -- EVENT LISTENERS --
         document.querySelectorAll('.momentary-btn').forEach(b => {
             const c = b.dataset.cmd;
-            const start = (e) => { e.preventDefault(); b.classList.add('btn-pressed'); send(c); };
-            const stop = () => { b.classList.remove('btn-pressed'); send('d'); };
+            const start = (e) => { 
+                if (currentMode !== 'manual') return;
+                e.preventDefault(); b.classList.add('btn-pressed'); send(c); 
+            };
+            const stop = () => { 
+                if (currentMode !== 'manual') return;
+                b.classList.remove('btn-pressed'); send('d'); 
+            };
             b.onmousedown = b.ontouchstart = start; b.onmouseup = b.ontouchend = stop;
         });
 
-        setInterval(() => {
-            const d = new Date();
-            document.querySelectorAll('.rtc-display').forEach(el => el.innerText = d.toLocaleTimeString('en-GB'));
-            document.querySelectorAll('.date-display').forEach(el => el.innerText = d.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase());
-        }, 1000);
-
         window.onload = () => {
+            // Mặc định tab Lịch trình
+            showPage('alarm'); 
+            
             const n = new Date();
-            document.getElementById('alarm-time').value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:00`;
+            document.getElementById('alarm-time').value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
             setDir('L');
+            
             const savedDark = localStorage.getItem('esp32AppDark') === 'true';
             document.getElementById('dark-mode-toggle').checked = savedDark;
             toggleAppDarkMode(savedDark);
