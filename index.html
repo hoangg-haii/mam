@@ -181,7 +181,7 @@
                     <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" alt="Logo" class="w-12 h-12 object-contain">
                 </div>
                 <h2 class="text-sm font-black uppercase tracking-tight leading-tight">Phần mềm điều khiển hệ thống dải phân cách tự động</h2>
-                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v3.35.12 • Dự án Khoa học kỹ thuật</p>
+                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v3.35.13 • Dự án Khoa học kỹ thuật</p>
             </div>
             <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                 <div class="space-y-3 text-sm text-slate-600 leading-relaxed">
@@ -248,7 +248,7 @@
             <button id="power-btn" onclick="togglePower()" class="power-btn-circle power-on active:scale-90">
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
             </button>
-            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">v3.35.12</span>
+            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">v3.35.13</span>
         </div>
     </div>
 
@@ -435,7 +435,7 @@
         let isSending = false;
         let alarmDir = 'L';
         let isPowerOn = true;
-        let pendingCommands = []; // Array of {id, raw, isExecuting}
+        let pendingCommands = [];
 
         function closeModal() { document.getElementById('intro-modal').classList.add('hidden'); }
         function openIntro() { document.getElementById('intro-modal').classList.remove('hidden'); toggleSidebar(); }
@@ -523,17 +523,14 @@
             if (pendingCommands.length === 0) return;
             const info = document.getElementById('alarm-info');
             info.innerText = "Đang xóa tất cả...";
-            
-            // Sao chép danh sách để tránh lỗi khi mảng thay đổi trong lúc lặp
             const toDelete = [...pendingCommands];
             for (const cmd of toDelete) {
-                // Chỉ xóa các lệnh không đang thực hiện
                 if (!cmd.isExecuting) {
                     await sendCmd('X' + cmd.raw);
                     const idx = pendingCommands.findIndex(c => c.id === cmd.id);
                     if (idx !== -1) pendingCommands.splice(idx, 1);
                     updatePendingUI();
-                    await new Promise(r => setTimeout(r, 500)); // Khoảng nghỉ 500ms
+                    await new Promise(r => setTimeout(r, 500));
                 }
             }
             info.innerText = "Đã hoàn tất xóa hàng loạt";
@@ -644,7 +641,7 @@
             if(sToggle.checked) { sToggle.checked = false; onSirenChange(); }
         }
 
-        // --- GLOBAL EMERGENCY STOP ---
+        // --- NÚT DỪNG KHẨN CẤP GỬI LỆNH DKC ---
         document.querySelectorAll('.emergency-stop-global').forEach(btn => {
             const trigger = (e) => { 
                 if (e.cancelable) e.preventDefault(); 
@@ -654,9 +651,17 @@
             btn.addEventListener('mousedown', trigger);
         });
 
+        // --- NÚT DI CHUYỂN NHẤN NHẢ GỬI LỆNH D KHI BUÔNG ---
         document.querySelectorAll('.momentary-btn').forEach(btn => {
-            const start = (e) => { if (e.cancelable) e.preventDefault(); btn.classList.add('btn-pressed'); sendCmd(btn.getAttribute('data-cmd')); };
-            const stop = () => { btn.classList.remove('btn-pressed'); sendCmd('dkc'); };
+            const start = (e) => { 
+                if (e.cancelable) e.preventDefault(); 
+                btn.classList.add('btn-pressed'); 
+                sendCmd(btn.getAttribute('data-cmd')); 
+            };
+            const stop = () => { 
+                btn.classList.remove('btn-pressed'); 
+                sendCmd('d'); // SỬA: Gửi lệnh 'd' thay vì 'dkc' khi buông nút di chuyển
+            };
             btn.addEventListener('touchstart', start, {passive: false});
             btn.addEventListener('touchend', stop);
             btn.addEventListener('mousedown', start);
@@ -708,6 +713,13 @@
         }
         function onDisconnected() { updateUI(false); resetAllTogglesToOff(); pendingCommands = []; updatePendingUI(); }
 
+        async function sendCmd(cmd) {
+            if (!characteristic || isSending) return;
+            try { isSending = true; await characteristic.writeValue(new TextEncoder().encode(cmd + "\n")); } 
+            catch (err) { console.error("Send Error:", err); } 
+            finally { setTimeout(() => isSending = false, 50); }
+        }
+
         function updateUI(connected) {
             const dot = document.getElementById('status-dot'), label = document.getElementById('status-label'), btn = document.getElementById('connect-btn'), mini = document.getElementById('mini-status');
             label.innerText = connected ? "Đã kết nối" : "Ngắt kết nối";
@@ -715,13 +727,6 @@
             mini.className = connected ? "w-2.5 h-2.5 rounded-full bg-emerald-500" : "w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse";
             btn.innerText = connected ? "Ngắt" : "Kết nối";
             btn.className = connected ? "bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase" : "bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-md";
-        }
-
-        async function sendCmd(cmd) {
-            if (!characteristic || isSending) return;
-            try { isSending = true; await characteristic.writeValue(new TextEncoder().encode(cmd + "\n")); } 
-            catch (err) { console.error("Send Error:", err); } 
-            finally { setTimeout(() => isSending = false, 50); }
         }
 
         function syncTime() {
