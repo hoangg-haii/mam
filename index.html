@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Hệ thống dải phân cách tự động v3.35.40</title>
+    <title>Hệ thống dải phân cách tự động v3.36.00</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     
     <style>
         :root { --primary: #4f46e5; --danger: #e11d48; --success: #10b981; --dark: #0f172a; }
+        
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
@@ -19,7 +20,17 @@
             user-select: none;
             -webkit-user-select: none;
             touch-action: none;
+            transition: background-color 0.3s;
         }
+
+        /* Dark Mode Utility */
+        body.dark-mode { background-color: #020617; color: #f8fafc; }
+        .dark-mode .bg-white { background-color: #0f172a !important; color: #f8fafc !important; border-color: #1e293b !important; }
+        .dark-mode .text-slate-900, .dark-mode .text-slate-800, .dark-mode .text-slate-700 { color: #f1f5f9 !important; }
+        .dark-mode .bg-slate-50 { background-color: #1e293b !important; }
+        .dark-mode .border { border-color: #334155 !important; }
+        .dark-mode .segmented-control { background-color: #1e293b !important; }
+        .dark-mode .segmented-item.active { background-color: #334155 !important; color: #818cf8 !important; }
 
         .btn-active:active { transform: scale(0.95); filter: brightness(0.9); }
         .btn-pressed { background-color: var(--dark) !important; color: white !important; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); }
@@ -61,7 +72,7 @@
                     <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" alt="Logo" class="w-14 h-14 object-contain">
                 </div>
                 <h2 class="text-lg font-black uppercase tracking-tight">Dự án dải phân cách</h2>
-                <p class="text-[10px] font-bold opacity-80 uppercase tracking-[0.3em] mt-2">Phiên bản v3.35.40</p>
+                <p class="text-[10px] font-bold opacity-80 uppercase tracking-[0.3em] mt-2">Phiên bản v3.36.00</p>
             </div>
             <div class="p-8 space-y-6 max-h-[60vh] overflow-y-auto custom-scroll">
                 <div class="space-y-4">
@@ -83,29 +94,30 @@
         </div>
     </div>
 
-    <!-- GUIDE POPUP MODAL (NEW) -->
+    <!-- SETTINGS MODAL (DARK MODE) -->
+    <div id="settings-modal" class="fixed inset-0 z-[130] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm hidden" onclick="closeModal('settings-modal')">
+        <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl overflow-hidden modal-enter p-8" onclick="event.stopPropagation()">
+            <h3 class="text-sm font-black text-slate-900 uppercase mb-6 text-center">Cài đặt ứng dụng</h3>
+            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border">
+                <span class="text-[11px] font-black uppercase text-slate-700">Giao diện tối</span>
+                <label class="switch">
+                    <input type="checkbox" id="dark-mode-toggle" onchange="toggleAppDarkMode(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <button onclick="closeModal('settings-modal')" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest mt-6">Đóng</button>
+        </div>
+    </div>
+
+    <!-- GUIDE POPUP MODAL -->
     <div id="guide-popup" class="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm hidden" onclick="closeModal('guide-popup')">
         <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl overflow-hidden modal-enter p-8 text-center" onclick="event.stopPropagation()">
             <div id="guide-icon" class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
             <h3 id="guide-title" class="text-sm font-black text-slate-900 uppercase mb-3">Tiêu đề</h3>
-            <div id="guide-content" class="text-slate-600 text-[11px] font-medium leading-relaxed mb-6 text-left space-y-2">
-                <!-- Nội dung sẽ render tại đây -->
-            </div>
+            <div id="guide-content" class="text-slate-600 text-[11px] font-medium leading-relaxed mb-6 text-left space-y-2"></div>
             <button onclick="closeModal('guide-popup')" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest">Đã hiểu</button>
-        </div>
-    </div>
-
-    <!-- THANK YOU MODAL -->
-    <div id="thanks-modal" class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-900/98 backdrop-blur-xl hidden">
-        <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden modal-enter p-10 text-center">
-            <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            </div>
-            <h2 class="text-2xl font-black text-slate-900 uppercase leading-none mb-2">Cảm ơn bạn!</h2>
-            <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">Hệ thống đã hạ gầm an toàn và ngắt kết nối thành công. Hẹn gặp lại!</p>
-            <button onclick="location.reload()" class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg">Đóng ứng dụng</button>
         </div>
     </div>
 
@@ -127,8 +139,18 @@
                 </div>
                 <button id="connect-btn" onclick="handleBluetoothConnection()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase active:scale-90">Kết nối</button>
             </div>
+
+            <!-- NÚT NGÀY/ ĐÊM ESP (ICON ĐƠN LẺ NẰM GIỮA) -->
+            <div class="py-4 border-b flex justify-center">
+                <button id="menu-day-night-btn" onclick="toggleEspDayNight()" class="text-amber-500 transition-all active:scale-75 p-3 rounded-full hover:bg-slate-50">
+                    <svg id="esp-mode-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <!-- Sun Icon (Default) -->
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+            </div>
             
-            <nav class="space-y-2 pt-4 border-t flex-1">
+            <nav class="space-y-2 pt-2 flex-1">
                 <button onclick="showPage('control')" class="nav-item w-full p-4 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-[11px] uppercase text-left transition-all">Bảng điều khiển</button>
                 <button onclick="showPage('alarm')" class="nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all">Lịch trình</button>
                 <button onclick="showPage('warning')" class="nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all">Cảnh báo</button>
@@ -137,7 +159,7 @@
 
             <div class="pt-6 border-t flex flex-col items-center">
                 <button onclick="openIntro()" class="text-slate-400 font-bold text-[10px] uppercase italic mb-4">Thông tin dự án</button>
-                <div class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] bg-slate-50 px-4 py-2 rounded-full border">Version 3.35.40</div>
+                <div class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] bg-slate-50 px-4 py-2 rounded-full border">Version 3.36.00</div>
             </div>
         </div>
     </div>
@@ -146,7 +168,9 @@
     <header class="w-full flex items-center justify-between p-6 z-50">
         <button onclick="toggleSidebar()" class="p-3.5 bg-white shadow-md rounded-2xl text-slate-800"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
         <h1 id="page-title" class="text-[11px] font-black text-slate-900 uppercase tracking-widest text-center flex-1 mx-4">Bảng điều khiển</h1>
-        <div class="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center"><svg class="text-indigo-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+        <button onclick="document.getElementById('settings-modal').classList.remove('hidden')" class="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center active:scale-90 transition-transform">
+            <svg class="text-indigo-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
     </header>
 
     <main class="w-full max-w-md px-6 flex-1 flex flex-col overflow-hidden pb-10">
@@ -231,57 +255,79 @@
                 <h3 class="font-black text-lg uppercase mb-1">Hướng dẫn nhanh</h3>
                 <p class="text-[10px] opacity-80 uppercase tracking-widest font-bold">Nhấn vào mục để xem chi tiết</p>
             </div>
-            
             <div class="space-y-3">
-                <!-- MỤC 1 -->
                 <div onclick="openGuide('connect')" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 cursor-pointer active:scale-95 transition-all">
                     <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-black text-xs">01</div>
                     <span class="font-black text-[11px] uppercase text-slate-800">Kết nối thiết bị</span>
                 </div>
-
-                <!-- MỤC 2 -->
                 <div onclick="openGuide('operation')" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 cursor-pointer active:scale-95 transition-all">
                     <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-black text-xs">02</div>
                     <span class="font-black text-[11px] uppercase text-slate-800">Chế độ vận hành & Lịch trình</span>
                 </div>
-
-                <!-- MỤC 3 -->
                 <div onclick="openGuide('alarm')" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 cursor-pointer active:scale-95 transition-all">
                     <div class="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-black text-xs">03</div>
                     <span class="font-black text-[11px] uppercase text-slate-800">Cảnh báo khẩn cấp</span>
                 </div>
-
-                <!-- MỤC 4 -->
                 <div onclick="openGuide('daynight')" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 cursor-pointer active:scale-95 transition-all">
                     <div class="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center font-black text-xs">04</div>
                     <span class="font-black text-[11px] uppercase text-slate-800">Chế độ Ngày/Đêm</span>
                 </div>
-
-                <!-- MỤC 5 -->
                 <div onclick="openGuide('stop')" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 cursor-pointer active:scale-95 transition-all">
                     <div class="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center font-black text-xs">05</div>
                     <span class="font-black text-[11px] uppercase text-rose-600">Dừng khẩn cấp</span>
                 </div>
             </div>
-            <div class="p-6 text-center opacity-30 italic text-[10px] font-bold uppercase tracking-widest">Version: v3.35.40</div>
         </div>
     </main>
 
+    <!-- THANKS MODAL -->
+    <div id="thanks-modal" class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-900/98 backdrop-blur-xl hidden">
+        <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden modal-enter p-10 text-center">
+            <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <h2 class="text-2xl font-black text-slate-900 uppercase leading-none mb-2">Cảm ơn bạn!</h2>
+            <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">Hệ thống đã hạ gầm an toàn và ngắt kết nối thành công. Hẹn gặp lại!</p>
+            <button onclick="location.reload()" class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg">Đóng ứng dụng</button>
+        </div>
+    </div>
+
     <script>
-        // -- CORE CONFIG & STATE --
         const UUID_SER = "0000ffe0-0000-1000-8000-00805f9b34fb";
         const UUID_CHA = "0000ffe1-0000-1000-8000-00805f9b34fb";
-        let device, char, isBusy = false, night = false, dir = 'L';
+        let device, char, isBusy = false, espNight = false, dir = 'L';
 
-        // -- BLUETOOTH CORE --
+        // -- DARK MODE LOGIC (APP UI) --
+        function toggleAppDarkMode(enabled) {
+            document.body.classList.toggle('dark-mode', enabled);
+            localStorage.setItem('esp32AppDark', enabled);
+        }
+
+        // -- ESP DAY/NIGHT LOGIC (COMMANDS) --
+        function toggleEspDayNight() {
+            espNight = !espNight;
+            const btn = document.getElementById('menu-day-night-btn');
+            const icon = document.getElementById('esp-mode-icon');
+            
+            if (espNight) {
+                send('dem');
+                btn.className = "text-indigo-500 transition-all active:scale-75 p-3 rounded-full hover:bg-slate-50";
+                // Moon Icon
+                icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"></path>';
+            } else {
+                send('ngay');
+                btn.className = "text-amber-500 transition-all active:scale-75 p-3 rounded-full hover:bg-slate-50";
+                // Sun Icon
+                icon.innerHTML = '<circle cx="12" cy="12" r="5" fill="currentColor"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+            }
+        }
+
+        // -- BLUETOOTH --
         async function handleBluetoothConnection() {
             if (device?.gatt.connected) {
                 try {
                     updateSt("Đang xử lý...");
-                    await send('h'); 
-                    await sleep(500);
-                    await send('baibai');
-                    await sleep(500);
+                    await send('h'); await sleep(500); await send('baibai'); await sleep(500);
                     document.getElementById('thanks-modal').classList.remove('hidden');
                     await device.gatt.disconnect();
                 } catch (e) { location.reload(); }
@@ -291,7 +337,6 @@
                     device = await navigator.bluetooth.requestDevice({ filters: [{ name: 'ESP32_Motor_Control' }], optionalServices: [UUID_SER] });
                     const srv = await (await device.gatt.connect()).getPrimaryService(UUID_SER);
                     char = await srv.getCharacteristic(UUID_CHA);
-                    
                     document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-emerald-500 shadow-lg";
                     document.getElementById('status-label').innerText = "ONLINE";
                     document.getElementById('connect-btn').innerText = "NGẮT";
@@ -308,7 +353,7 @@
             setTimeout(() => isBusy = false, 50);
         }
 
-        // -- UI LOGIC --
+        // -- UI NAV --
         function toggleSidebar() {
             const s = document.getElementById('sidebar'), o = document.getElementById('overlay');
             const open = s.style.transform === 'translateX(0%)';
@@ -318,77 +363,25 @@
         }
 
         function showPage(p) {
-            ['control', 'alarm', 'warning', 'guide'].forEach(id => {
-                const el = document.getElementById('page-'+id);
-                if(el) el.classList.toggle('hidden', id !== p);
-            });
-
+            ['control', 'alarm', 'warning', 'guide'].forEach(id => document.getElementById('page-'+id)?.classList.toggle('hidden', id !== p));
             const t = { control: 'Bảng điều khiển', alarm: 'Lịch trình', warning: 'Cảnh báo khẩn cấp', guide: 'Hướng dẫn sử dụng' };
             document.getElementById('page-title').innerText = t[p].toUpperCase();
-            
-            document.querySelectorAll('.nav-item').forEach(btn => {
-                const isActive = btn.innerText.toLowerCase().includes(t[p].toLowerCase());
-                btn.className = isActive ? 
-                    "nav-item w-full p-4 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-[11px] uppercase text-left transition-all" : 
-                    "nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all";
-            });
-
             if (window.innerWidth < 768) toggleSidebar();
         }
 
-        // -- GUIDE POPUP LOGIC (NEW) --
         function openGuide(type) {
             const popup = document.getElementById('guide-popup');
             const title = document.getElementById('guide-title');
             const content = document.getElementById('guide-content');
-            
             const guides = {
-                'connect': {
-                    t: 'Kết nối thiết bị',
-                    c: `
-                        <p>1. Mở menu và nhấn nút <b>Kết nối</b> màu xanh.</p>
-                        <p>2. Chọn thiết bị tên <b>ESP32_Motor_Control</b> trong danh sách hiện ra.</p>
-                        <p>3. Khi đèn tín hiệu chuyển sang <b>Xanh (ONLINE)</b>, bạn đã có thể bắt đầu điều khiển.</p>
-                    `
-                },
-                'operation': {
-                    t: 'Vận hành & Lịch trình',
-                    c: `
-                        <p><b>• Tự động:</b> Hệ thống chạy theo các khung giờ đã cài đặt trong tab <i>Lịch trình</i>.</p>
-                        <p><b>• Thủ công:</b> Dùng các nút mũi tên (Tới/Lùi) và L1, R1, L2, R2 để di chuyển từng motor riêng lẻ.</p>
-                        <p><b>• Ý nghĩa nút:</b> Mũi tên lên (Tới), Mũi tên xuống (Lùi). Các nút L/R dùng để căn chỉnh vị trí dải phân cách.</p>
-                    `
-                },
-                'alarm': {
-                    t: 'Cảnh báo khẩn cấp',
-                    c: `
-                        <p>Dùng trong trường hợp có xe ưu tiên (Cứu thương, Cứu hỏa) hoặc sự cố giao thông:</p>
-                        <p><b>• Đèn:</b> Bật dải đèn LED báo hiệu dọc dải phân cách.</p>
-                        <p><b>• Còi:</b> Phát âm thanh cảnh báo cường độ cao.</p>
-                        <p><b>• Toàn diện:</b> Kích hoạt cả hai cùng lúc.</p>
-                    `
-                },
-                'daynight': {
-                    t: 'Chế độ Ngày/Đêm',
-                    c: `
-                        <p>Tự động tối ưu hóa hoạt động của hệ thống theo thời gian thực:</p>
-                        <p><b>• Ban ngày:</b> Ưu tiên tốc độ xử lý nhanh để giải tỏa ùn tắc.</p>
-                        <p><b>• Ban đêm:</b> Giảm độ sáng đèn LED, motor hoạt động êm ái hơn để tránh gây tiếng ồn khu dân cư.</p>
-                    `
-                },
-                'stop': {
-                    t: 'Dừng khẩn cấp',
-                    c: `
-                        <p>Đây là nút quan trọng nhất (màu đỏ rực ở trang chủ).</p>
-                        <p><b>• Tác dụng:</b> Ngắt ngay lập tức nguồn điện cấp cho các motor.</p>
-                        <p><b>• Sử dụng khi:</b> Phát hiện chướng ngại vật bị kẹt hoặc có người/phương tiện đi vào vùng đang chuyển đổi dải phân cách.</p>
-                    `
-                }
+                'connect': { t: 'Kết nối thiết bị', c: '<p>1. Mở menu và nhấn nút <b>Kết nối</b>.</p><p>2. Chọn <b>ESP32_Motor_Control</b>.</p>' },
+                'operation': { t: 'Vận hành & Lịch trình', c: '<p><b>• Tự động:</b> Chạy theo giờ cài đặt.</p><p><b>• Thủ công:</b> Điều khiển từng motor bằng nút bấm.</p>' },
+                'alarm': { t: 'Cảnh báo khẩn cấp', c: '<p>Bật đèn và còi báo động khi có xe ưu tiên hoặc sự cố.</p>' },
+                'daynight': { t: 'Chế độ Ngày/Đêm', c: '<p>Tối ưu hoạt động: Ban ngày (tốc độ), Ban đêm (yên tĩnh & giảm sáng).</p>' },
+                'stop': { t: 'Dừng khẩn cấp', c: '<p>Ngắt nguồn ngay lập tức khi phát hiện vật cản nguy hiểm.</p>' }
             };
-
-            const data = guides[type];
-            title.innerText = data.t;
-            content.innerHTML = data.c;
+            title.innerText = guides[type].t;
+            content.innerHTML = guides[type].c;
             popup.classList.remove('hidden');
         }
 
@@ -400,7 +393,6 @@
             send(m === 'manual' ? 'n' : 'h');
         }
 
-        // -- ALARM LOGIC --
         function setIn(m) {
             document.getElementById('in-manual').classList.toggle('active', m === 'manual');
             document.getElementById('in-file').classList.toggle('active', m === 'file');
@@ -414,11 +406,10 @@
         }
 
         function addAlarm() {
-            const time = document.getElementById('alarm-time').value;
-            if (!time) return;
-            const clean = time.replace(/:/g, '') + dir;
-            send(clean);
-            hist(time, dir);
+            const t = document.getElementById('alarm-time').value;
+            if (!t) return;
+            send(t.replace(/:/g, '') + dir);
+            hist(t, dir);
         }
 
         function hist(t, d) {
@@ -436,33 +427,25 @@
             r.onload = async (ev) => {
                 for (let l of ev.target.result.split('\n')) {
                     const c = l.trim().toUpperCase();
-                    if (c.length === 7) { 
-                        await send(c); 
-                        hist(`${c.substring(0,2)}:${c.substring(2,4)}:${c.substring(4,6)}`, c.charAt(6));
-                        await sleep(300);
-                    }
+                    if (c.length === 7) { await send(c); hist(`${c.substring(0,2)}:${c.substring(2,4)}:${c.substring(4,6)}`, c.charAt(6)); await sleep(300); }
                 }
             };
             r.readAsText(f);
         }
 
-        // -- HELPERS --
         function updateSt(t) { document.getElementById('status-label').innerText = t.toUpperCase(); }
         function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         function openIntro() { document.getElementById('intro-modal').classList.remove('hidden'); if (window.innerWidth < 768) toggleSidebar(); }
         function emergency() { send('cbon'); setTimeout(() => send('ccbn'), 100); }
 
-        // -- MOMENTARY BUTTONS --
         document.querySelectorAll('.momentary-btn').forEach(b => {
             const c = b.dataset.cmd;
             const start = (e) => { e.preventDefault(); b.classList.add('btn-pressed'); send(c); };
             const stop = () => { b.classList.remove('btn-pressed'); send('d'); };
-            b.onmousedown = b.ontouchstart = start;
-            b.onmouseup = b.ontouchend = stop;
+            b.onmousedown = b.ontouchstart = start; b.onmouseup = b.ontouchend = stop;
         });
 
-        // -- TIME LOOP --
         setInterval(() => {
             const d = new Date();
             document.querySelectorAll('.rtc-display').forEach(el => el.innerText = d.toLocaleTimeString('en-GB'));
@@ -473,6 +456,9 @@
             const n = new Date();
             document.getElementById('alarm-time').value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:00`;
             setDir('L');
+            const savedDark = localStorage.getItem('esp32AppDark') === 'true';
+            document.getElementById('dark-mode-toggle').checked = savedDark;
+            toggleAppDarkMode(savedDark);
         };
     </script>
 </body>
