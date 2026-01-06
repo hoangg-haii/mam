@@ -61,19 +61,27 @@
         .switch-lg input:checked + .slider:before { transform: translateX(30px); }
 
         .power-btn-circle {
-            width: 56px;
-            height: 56px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
             cursor: pointer;
+            border: 4px solid white;
         }
         
-        .power-on { background-color: #10b981; color: white; }
-        .power-off { background-color: #94a3b8; color: #f1f5f9; }
+        .power-on { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            color: white; 
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+        .power-off { 
+            background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); 
+            color: #f1f5f9; 
+        }
 
         .btn-disabled {
             opacity: 0.2;
@@ -165,7 +173,7 @@
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
             </div>
             <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight mb-2">Xác nhận ngắt?</h3>
-            <p class="text-sm text-slate-500 mb-6 leading-relaxed">Hệ thống sẽ tự động <b>Hạ gầm</b> và tắt các cảnh báo trước khi ngắt.</p>
+            <p class="text-sm text-slate-500 mb-6 leading-relaxed">Hệ thống sẽ tự động <b>Hạ gầm</b> và tắt các cảnh báo trước khi ngắt kết nối.</p>
             <div class="flex gap-3">
                 <button onclick="hideConfirm()" class="flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 uppercase text-xs">Hủy</button>
                 <button onclick="executeDisconnect()" class="flex-1 py-3 rounded-xl font-black text-white bg-rose-600 shadow-lg shadow-rose-200 uppercase text-xs">Đồng ý</button>
@@ -181,7 +189,7 @@
                     <img src="https://storage-vnportal.vnpt.vn/qnm-ubnd/5892/TuanTQC/Tuan20t11/logo.png" alt="Logo" class="w-12 h-12 object-contain">
                 </div>
                 <h2 class="text-sm font-black uppercase tracking-tight leading-tight">Phần mềm điều khiển hệ thống dải phân cách tự động</h2>
-                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v3.35.13 • Dự án Khoa học kỹ thuật</p>
+                <p class="text-[9px] font-bold opacity-75 uppercase tracking-[0.2em] mt-2">v3.35.14 • Dự án Khoa học kỹ thuật</p>
             </div>
             <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                 <div class="space-y-3 text-sm text-slate-600 leading-relaxed">
@@ -245,10 +253,13 @@
             </nav>
         </div>
         <div class="p-6 flex flex-col items-center border-t border-slate-50 relative gap-3">
-            <button id="power-btn" onclick="togglePower()" class="power-btn-circle power-on active:scale-90">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
-            </button>
-            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">v3.35.13</span>
+            <div class="flex flex-col items-center">
+                <button id="power-btn" onclick="togglePower()" class="power-btn-circle power-on active:scale-90">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
+                </button>
+                <span id="power-label" class="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-2">Hệ thống: Bật</span>
+            </div>
+            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">v3.35.14</span>
         </div>
     </div>
 
@@ -592,9 +603,20 @@
 
         function togglePower() {
             const btn = document.getElementById('power-btn');
+            const label = document.getElementById('power-label');
             isPowerOn = !isPowerOn;
-            if (isPowerOn) { btn.className = "power-btn-circle power-on active:scale-90"; sendCmd('on'); } 
-            else { btn.className = "power-btn-circle power-off active:scale-90"; sendCmd('sl'); }
+            
+            if (isPowerOn) { 
+                btn.className = "power-btn-circle power-on active:scale-90"; 
+                label.innerText = "Hệ thống: Bật";
+                label.className = "text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-2";
+                sendCmd('cbon'); // ĐÃ SỬA: Chuyển thành cbon
+            } else { 
+                btn.className = "power-btn-circle power-off active:scale-90"; 
+                label.innerText = "Hệ thống: Tắt";
+                label.className = "text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2";
+                sendCmd('cboff'); // Tắt hệ thống gửi cboff
+            }
         }
 
         async function resetAllTogglesToOff() {
@@ -660,7 +682,7 @@
             };
             const stop = () => { 
                 btn.classList.remove('btn-pressed'); 
-                sendCmd('d'); // SỬA: Gửi lệnh 'd' thay vì 'dkc' khi buông nút di chuyển
+                sendCmd('d');
             };
             btn.addEventListener('touchstart', start, {passive: false});
             btn.addEventListener('touchend', stop);
@@ -682,7 +704,12 @@
                 device.addEventListener('gattserverdisconnected', onDisconnected);
                 updateUI(true);
                 syncTime();
-                setTimeout(() => { sendCmd('on'); isPowerOn = true; document.getElementById('power-btn').className = "power-btn-circle power-on active:scale-90"; }, 500);
+                setTimeout(() => { 
+                    sendCmd('cbon'); // Khi kết nối cũng gửi cbon
+                    isPowerOn = true; 
+                    document.getElementById('power-btn').className = "power-btn-circle power-on active:scale-90";
+                    document.getElementById('power-label').innerText = "Hệ thống: Bật";
+                }, 500);
             } catch (err) { updateUI(false); }
         });
 
