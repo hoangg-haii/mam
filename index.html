@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Hệ thống dải phân cách tự động v3.45.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains_Mono:wght@700&display=swap" rel="stylesheet">
     
     <style>
         :root { --primary: #4f46e5; --danger: #e11d48; --success: #10b981; --dark: #0f172a; }
@@ -23,7 +23,6 @@
             transition: background-color 0.3s;
         }
 
-        /* Dark Mode Utility */
         body.dark-mode { background-color: #020617; color: #f8fafc; }
         .dark-mode .bg-white { background-color: #0f172a !important; color: #f8fafc !important; border-color: #1e293b !important; }
         .dark-mode .text-slate-900, .dark-mode .text-slate-800, .dark-mode .text-slate-700 { color: #f1f5f9 !important; }
@@ -59,11 +58,10 @@
         }
         .segmented-item.active { background-color: white; color: var(--primary); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
 
-        /* Executing Highlight */
         .executing {
             border: 2px solid var(--success) !important;
             background-color: #f0fdf4 !important;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
             animation: pulse-active 2s infinite;
         }
         .dark-mode .executing { background-color: #064e3b !important; }
@@ -76,7 +74,6 @@
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
         
-        /* List Collapse */
         #pending-list.collapsed { max-height: 120px; overflow: hidden; position: relative; }
         #pending-list.collapsed::after {
             content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
@@ -121,12 +118,23 @@
     <div id="settings-modal" class="fixed inset-0 z-[130] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm hidden" onclick="closeModal('settings-modal')">
         <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl overflow-hidden modal-enter p-8" onclick="event.stopPropagation()">
             <h3 class="text-sm font-black text-slate-900 uppercase mb-6 text-center">Cài đặt</h3>
-            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border">
-                <span class="text-[11px] font-black uppercase text-slate-700">Giao diện tối</span>
-                <label class="switch">
-                    <input type="checkbox" id="dark-mode-toggle" onchange="toggleAppDarkMode(this.checked)">
-                    <span class="slider"></span>
-                </label>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border">
+                    <span class="text-[11px] font-black uppercase text-slate-700">Giao diện tối</span>
+                    <label class="switch">
+                        <input type="checkbox" id="dark-mode-toggle" onchange="toggleAppDarkMode(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <!-- Thông tin tác giả trong Cài đặt -->
+                <div class="p-4 bg-slate-50 rounded-2xl border space-y-3">
+                    <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Thông tin tác giả</span>
+                    <div class="space-y-2">
+                        <p class="text-[10px] text-slate-700 font-bold uppercase"><span class="text-indigo-600">Nhóm:</span> Hoàng Hải, Tuyết Nhung, Trường Long</p>
+                        <p class="text-[10px] text-slate-700 font-bold uppercase"><span class="text-amber-600">GVHD:</span> Thầy Hồ Viết Tiệp</p>
+                        <p class="text-[10px] text-slate-500 font-black uppercase italic">THPT Trần Quý Cáp</p>
+                    </div>
+                </div>
             </div>
             <button onclick="closeModal('settings-modal')" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest mt-6">Đóng</button>
         </div>
@@ -160,8 +168,8 @@
             </div>
             
             <nav class="space-y-2 pt-2 flex-1">
-                <button id="nav-alarm" onclick="showPage('alarm')" class="nav-item w-full p-4 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-[11px] uppercase text-left transition-all">Lịch trình (Auto)</button>
-                <button id="nav-control" onclick="showPage('control')" class="nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all">Bảng điều khiển</button>
+                <!-- Sửa lại 3 tab: Điều khiển, Cảnh báo, Hướng dẫn -->
+                <button id="nav-control" onclick="goToControlPage()" class="nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all">Điều khiển</button>
                 <button id="nav-warning" onclick="showPage('warning')" class="nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all">Cảnh báo</button>
                 <button id="nav-guide" onclick="showPage('guide')" class="nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all">Hướng dẫn</button>
             </nav>
@@ -180,23 +188,22 @@
         </button>
         <h1 id="page-title" class="text-[11px] font-black text-slate-900 uppercase tracking-widest text-center flex-1 mx-4">Lịch trình</h1>
         <button onclick="document.getElementById('settings-modal').classList.remove('hidden')" class="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center active:scale-90 transition-transform">
-            <svg class="text-indigo-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 2 2-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <svg class="text-indigo-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 2 2 2 2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 2 2 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 2 2-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
     </header>
 
     <main class="w-full max-w-md px-6 flex-1 flex flex-col overflow-hidden pb-10">
         
-        <!-- MODALITY SYNC (Chế độ dùng chung cho Alarm và Control) -->
-        <div class="bg-white p-2 mb-6 rounded-2xl border flex-none shadow-sm">
+        <!-- MODALITY SYNC (Lựa chọn chế độ) -->
+        <div id="modality-switch-container" class="bg-white p-2 mb-6 rounded-2xl border flex-none shadow-sm">
             <div class="segmented-control">
                 <div id="global-mode-auto" class="segmented-item active" onclick="setGlobalMode('auto')">Tự động</div>
                 <div id="global-mode-manual" class="segmented-item" onclick="setGlobalMode('manual')">Thủ công</div>
             </div>
         </div>
 
-        <!-- ALARM PAGE (Tab Mặc định) -->
+        <!-- ALARM PAGE (Trang Tự động) -->
         <div id="page-alarm" class="h-full flex flex-col space-y-6 overflow-hidden">
-            <!-- Đồng hồ hiện tại đã được thêm vào đây -->
             <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border-b-[6px] border-slate-950 text-center relative overflow-hidden flex-none">
                 <div class="rtc-display text-5xl font-['JetBrains_Mono'] font-bold text-emerald-400 leading-none relative z-10">00:00:00</div>
                 <div class="date-display text-[9px] font-black text-emerald-600/60 uppercase mt-3 relative z-10 tracking-[0.3em]">CẬP NHẬT THỜI GIAN...</div>
@@ -228,7 +235,7 @@
 
             <div class="flex items-center justify-between px-2 flex-none">
                 <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Danh sách</span>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Danh sách sắp thực hiện</span>
                     <button id="btn-toggle-list" onclick="toggleList()" class="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-[9px] font-black uppercase">Thu gọn</button>
                 </div>
                 <button onclick="clearAllAlarms()" class="text-[9px] font-black text-rose-500 uppercase hover:underline">Xóa tất cả</button>
@@ -239,16 +246,15 @@
             </div>
         </div>
 
-        <!-- CONTROL PAGE -->
+        <!-- CONTROL PAGE (Trang Thủ công) -->
         <div id="page-control" class="hidden space-y-6 flex flex-col h-full overflow-hidden">
-            <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border-b-[6px] border-slate-950 text-center relative overflow-hidden">
+            <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border-b-[6px] border-slate-950 text-center relative overflow-hidden flex-none">
                 <div class="rtc-display text-5xl font-['JetBrains_Mono'] font-bold text-emerald-400 leading-none relative z-10">00:00:00</div>
                 <div class="date-display text-[9px] font-black text-emerald-600/60 uppercase mt-3 relative z-10 tracking-[0.3em]">CẬP NHẬT THỜI GIAN...</div>
             </div>
 
             <div class="flex-1 flex flex-col justify-center gap-6">
-                <!-- UI cho Manual -->
-                <div id="manual-controls" class="hidden grid grid-cols-3 gap-4">
+                <div id="manual-controls" class="grid grid-cols-3 gap-4">
                     <button data-cmd="1" class="momentary-btn h-20 bg-white border-2 rounded-[1.8rem] font-black text-xl text-slate-800 active:scale-95 transition-all">L1</button>
                     <button data-cmd="t" class="momentary-btn h-20 bg-slate-900 text-white rounded-[1.8rem] flex items-center justify-center shadow-lg active:scale-95 transition-all"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m18 15-6-6-6 6"/></svg></button>
                     <button data-cmd="3" class="momentary-btn h-20 bg-white border-2 rounded-[1.8rem] font-black text-xl text-slate-800 active:scale-95 transition-all">R1</button>
@@ -256,16 +262,6 @@
                     <button data-cmd="l" class="momentary-btn h-20 bg-slate-900 text-white rounded-[1.8rem] flex items-center justify-center shadow-lg active:scale-95 transition-all"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m6 9 6 6 6-6"/></svg></button>
                     <button data-cmd="4" class="momentary-btn h-20 bg-white border-2 rounded-[1.8rem] font-black text-xl text-slate-800 active:scale-95 transition-all">R2</button>
                 </div>
-                
-                <!-- Placeholder cho Auto -->
-                <div id="auto-controls-placeholder" class="text-center py-12 px-6 border-2 border-dashed rounded-[2.5rem] space-y-4">
-                    <div class="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                    </div>
-                    <div class="text-slate-500 font-black text-xs uppercase italic tracking-widest">Chế độ Tự động</div>
-                    <p class="text-[10px] text-slate-400 font-medium">Hệ thống vận hành theo lịch trình. Chuyển sang "Thủ công" để điều khiển trực tiếp.</p>
-                </div>
-
                 <button onclick="send('dkc')" class="w-full bg-rose-600 text-white py-6 rounded-[2.2rem] font-black text-xs uppercase shadow-xl border-b-[6px] border-rose-800 active:border-b-0 active:translate-y-1 transition-all">Dừng khẩn cấp</button>
             </div>
         </div>
@@ -276,7 +272,7 @@
             <div class="space-y-4">
                 <div class="bg-white p-7 rounded-3xl border flex items-center justify-between shadow-sm">
                     <span class="font-black text-xs uppercase text-slate-700">Đèn cảnh báo</span>
-                    <label class="switch"><input type="checkbox" onchange="send(this.checked?'cbon':'cboff')"><span class="slider"></span></label>
+                    <label class="switch"><input type="checkbox" onchange="send(this.checked?'cbon':'cbof')"><span class="slider"></span></label>
                 </div>
                 <div class="bg-white p-7 rounded-3xl border flex items-center justify-between shadow-sm">
                     <span class="font-black text-xs uppercase text-slate-700">Còi báo động</span>
@@ -322,7 +318,20 @@
         const UUID_CHA = "0000ffe1-0000-1000-8000-00805f9b34fb";
         let device, char, isBusy = false, espNight = false, dir = 'L';
         let alarms = []; 
-        let currentMode = 'auto'; // 'auto' | 'manual'
+        let currentMode = 'auto'; 
+        let syncTimer = null;
+        let executingAlarms = new Set();
+
+        // -- TIME SYNC (STHHMMSS) --
+        function syncTimeToEsp() {
+            if (!char) return;
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            const timeCmd = `ST${h}${m}${s}`;
+            send(timeCmd);
+        }
 
         // -- DARK MODE --
         function toggleAppDarkMode(enabled) {
@@ -330,42 +339,34 @@
             localStorage.setItem('esp32AppDark', enabled);
         }
 
-        // -- ESP DAY/NIGHT --
+        // -- ESP DAY/NIGHT (Sửa lệnh thành u/i) --
         function toggleEspDayNight() {
             espNight = !espNight;
             const btn = document.getElementById('menu-day-night-btn');
             const icon = document.getElementById('esp-mode-icon');
             if (espNight) {
-                send('dem');
+                send('i'); // Đêm
                 btn.className = "text-indigo-500 transition-all active:scale-75 p-3 rounded-full hover:bg-slate-50";
                 icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"></path>';
             } else {
-                send('ngay');
+                send('u'); // Ngày
                 btn.className = "text-amber-500 transition-all active:scale-75 p-3 rounded-full hover:bg-slate-50";
                 icon.innerHTML = '<circle cx="12" cy="12" r="5" fill="currentColor"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
             }
         }
 
-        // -- GLOBAL MODE SYNC --
+        // -- GLOBAL MODE SYNC (Gửi lệnh ngay lập tức) --
         function setGlobalMode(mode) {
-            if (currentMode === mode) return;
             currentMode = mode;
-            
-            // Cập nhật UI Switch
             document.getElementById('global-mode-auto').classList.toggle('active', mode === 'auto');
             document.getElementById('global-mode-manual').classList.toggle('active', mode === 'manual');
             
-            // Cập nhật UI Control Page
-            document.getElementById('manual-controls').classList.toggle('hidden', mode !== 'manual');
-            document.getElementById('auto-controls-placeholder').classList.toggle('hidden', mode !== 'auto');
-
-            // Gửi lệnh & Chuyển tab
-            if (mode === 'auto') {
-                send('h'); // Tự động -> Hạ gầm
-                showPage('alarm'); // Tự động chuyển qua tab Lịch trình
-            } else {
-                send('n'); // Thủ công -> Nâng gầm
-                showPage('control'); // Tự động chuyển qua tab Điều khiển
+            if (mode === 'auto') { 
+                send('h'); // Gửi lệnh Auto ngay
+                showPage('alarm'); 
+            } else { 
+                send('n'); // Gửi lệnh Manual ngay
+                showPage('control'); 
             }
         }
 
@@ -373,8 +374,8 @@
         async function handleBluetoothConnection() {
             if (device?.gatt.connected) {
                 try {
-                    updateSt("Đang ngắt...");
                     await send('h'); await sleep(300); await send('baibai');
+                    if(syncTimer) clearInterval(syncTimer);
                     document.getElementById('thanks-modal').classList.remove('hidden');
                     await device.gatt.disconnect();
                 } catch (e) { location.reload(); }
@@ -384,12 +385,34 @@
                     device = await navigator.bluetooth.requestDevice({ filters: [{ name: 'ESP32_Motor_Control' }], optionalServices: [UUID_SER] });
                     const srv = await (await device.gatt.connect()).getPrimaryService(UUID_SER);
                     char = await srv.getCharacteristic(UUID_CHA);
+                    
+                    await char.startNotifications();
+                    char.addEventListener('characteristicvaluechanged', handleNotifications);
+
                     document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-emerald-500 shadow-lg";
                     document.getElementById('status-label').innerText = "ONLINE";
                     document.getElementById('connect-btn').innerText = "NGẮT";
                     document.getElementById('connect-btn').className = "bg-rose-600 text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase";
+                    
                     send('on');
+                    setTimeout(() => {
+                        syncTimeToEsp();
+                        syncTimer = setInterval(syncTimeToEsp, 120000); 
+                    }, 500);
                 } catch (e) { updateSt("Lỗi"); }
+            }
+        }
+
+        function handleNotifications(event) {
+            let data = new TextDecoder().decode(event.target.value).trim();
+            if (data.startsWith('Đ')) {
+                executingAlarms.add(data.substring(1));
+                renderAlarms();
+            } else if (data.startsWith('E')) {
+                let cmd = data.substring(1);
+                executingAlarms.delete(cmd);
+                alarms = alarms.filter(a => a.cmd !== cmd);
+                renderAlarms();
             }
         }
 
@@ -409,17 +432,38 @@
             setTimeout(() => o.style.opacity = open ? '0' : '1', 10);
         }
 
+        function goToControlPage() {
+            // Tab Điều khiển sẽ điều hướng dựa trên mode hiện tại
+            if (currentMode === 'auto') showPage('alarm');
+            else showPage('control');
+        }
+
         function showPage(p) {
             ['control', 'alarm', 'warning', 'guide'].forEach(id => {
                 const el = document.getElementById('page-'+id);
                 if (el) el.classList.toggle('hidden', id !== p);
             });
-            const t = { control: 'Bảng điều khiển', alarm: 'Lịch trình', warning: 'Cảnh báo khẩn cấp', guide: 'Hướng dẫn sử dụng' };
+            
+            const switchContainer = document.getElementById('modality-switch-container');
+            if (p === 'warning' || p === 'guide') {
+                switchContainer.classList.add('hidden');
+            } else {
+                switchContainer.classList.remove('hidden');
+            }
+
+            const t = { control: 'Thủ công', alarm: 'Tự động', warning: 'Cảnh báo khẩn cấp', guide: 'Hướng dẫn sử dụng' };
             document.getElementById('page-title').innerText = t[p].toUpperCase();
             
-            // Update Navigation Menu Active State
+            // Cập nhật trạng thái active cho menu items
             document.querySelectorAll('.nav-item').forEach(btn => {
-                btn.className = btn.id === 'nav-'+p ? 
+                let isActive = false;
+                if (p === 'alarm' || p === 'control') {
+                    if (btn.id === 'nav-control') isActive = true;
+                } else {
+                    if (btn.id === 'nav-' + p) isActive = true;
+                }
+                
+                btn.className = isActive ? 
                     "nav-item w-full p-4 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-[11px] uppercase text-left transition-all" : 
                     "nav-item w-full p-4 rounded-2xl hover:bg-slate-50 text-slate-600 font-bold text-[11px] uppercase text-left transition-all";
             });
@@ -439,7 +483,6 @@
             ['L', 'R'].forEach(id => document.getElementById('dir-'+id).className = `flex-1 py-4 rounded-2xl font-black text-[11px] uppercase ${dir === id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-400'}`);
         }
 
-        // -- ALARM MANAGEMENT --
         function toggleList() {
             const list = document.getElementById('pending-list');
             const btn = document.getElementById('btn-toggle-list');
@@ -450,20 +493,24 @@
         function addAlarm() {
             const timeVal = document.getElementById('alarm-time').value;
             if (!timeVal) return;
-            const id = Date.now().toString();
             const cmd = timeVal.replace(/:/g, '') + dir;
             send(cmd);
-            alarms.push({ id, time: timeVal, dir: dir, cmd: cmd });
+            alarms.push({ id: Date.now().toString(), time: timeVal, dir: dir, cmd: cmd });
             renderAlarms();
         }
 
         function deleteAlarm(id) {
+            const alarm = alarms.find(a => a.id === id);
+            if (alarm) send('X' + alarm.cmd);
             alarms = alarms.filter(a => a.id !== id);
+            executingAlarms.delete(alarm?.cmd);
             renderAlarms();
         }
 
         function clearAllAlarms() {
+            alarms.forEach(a => send('X' + a.cmd));
             alarms = [];
+            executingAlarms.clear();
             renderAlarms();
         }
 
@@ -473,15 +520,10 @@
                 list.innerHTML = '<div class="text-center py-10 opacity-20 italic text-xs font-bold uppercase tracking-widest">Chưa có lịch trình</div>';
                 return;
             }
-
-            const now = new Date();
-            const nowStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-
             alarms.sort((a, b) => a.time.localeCompare(b.time));
-
             list.innerHTML = '';
             alarms.forEach(a => {
-                const isExecuting = nowStr >= a.time && nowStr <= addSecondsToTime(a.time, 15);
+                const isExecuting = executingAlarms.has(a.cmd);
                 const item = document.createElement('div');
                 item.className = `flex justify-between items-center p-5 bg-white rounded-3xl border shadow-sm transition-all ${isExecuting ? 'executing scale-[1.02]' : ''}`;
                 item.innerHTML = `
@@ -502,12 +544,6 @@
             });
         }
 
-        function addSecondsToTime(timeStr, secs) {
-            const [h, m, s] = timeStr.split(':').map(Number);
-            const date = new Date(); date.setHours(h, m, s + secs);
-            return `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}:${String(date.getSeconds()).padStart(2,'0')}`;
-        }
-
         async function uploadFile(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -518,9 +554,8 @@
                     const raw = line.trim().toUpperCase();
                     if (raw.length === 7) {
                         const time = `${raw.substring(0,2)}:${raw.substring(2,4)}:${raw.substring(4,6)}`;
-                        const dirFile = raw.charAt(6);
                         await send(raw);
-                        alarms.push({ id: Date.now() + Math.random(), time, dir: dirFile, cmd: raw });
+                        alarms.push({ id: (Date.now() + Math.random()).toString(), time, dir: raw.charAt(6), cmd: raw });
                         await sleep(150);
                     }
                 }
@@ -529,27 +564,19 @@
             reader.readAsText(file);
         }
 
-        // -- HELPERS --
         function updateSt(t) { document.getElementById('status-label').innerText = t.toUpperCase(); }
         function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function openIntro() { document.getElementById('intro-modal').classList.remove('hidden'); if (document.getElementById('sidebar').style.transform === 'translateX(0%)') toggleSidebar(); }
+        function openIntro() { document.getElementById('intro-modal').classList.remove('hidden'); toggleSidebar(); }
         function emergency() { send('cbon'); setTimeout(() => send('ccbn'), 100); }
 
-        // -- CLOCK & RUNTIME --
         setInterval(() => {
             const d = new Date();
             const timeStr = d.toLocaleTimeString('en-GB');
             document.querySelectorAll('.rtc-display').forEach(el => el.innerText = timeStr);
             document.querySelectorAll('.date-display').forEach(el => el.innerText = d.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase());
-            
-            // Check list execution every second
-            if (!document.getElementById('page-alarm').classList.contains('hidden')) {
-                renderAlarms();
-            }
         }, 1000);
 
-        // -- EVENT LISTENERS --
         document.querySelectorAll('.momentary-btn').forEach(b => {
             const c = b.dataset.cmd;
             const start = (e) => { 
@@ -564,13 +591,10 @@
         });
 
         window.onload = () => {
-            // Mặc định tab Lịch trình
             showPage('alarm'); 
-            
             const n = new Date();
             document.getElementById('alarm-time').value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
             setDir('L');
-            
             const savedDark = localStorage.getItem('esp32AppDark') === 'true';
             document.getElementById('dark-mode-toggle').checked = savedDark;
             toggleAppDarkMode(savedDark);
