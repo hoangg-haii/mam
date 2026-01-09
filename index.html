@@ -204,7 +204,7 @@
                 </div>
 
                 <div id="alarm-file-ui" class="hidden py-1 text-center">
-                    <label class="flex flex-col items-center p-4 bg-slate-50 border-2 border-dashed rounded-[1.5rem] cursor-pointer hover:bg-slate-100 transition-all border-slate-200">
+                    <label id="file-dropzone" class="flex flex-col items-center p-4 bg-slate-50 border-2 border-dashed rounded-[1.5rem] cursor-pointer hover:bg-slate-100 transition-all border-slate-200">
                         <svg class="text-slate-400 mb-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                         <span class="text-[9px] font-black uppercase text-slate-500 tracking-tight">Tải tệp lịch trình (.txt)</span>
                         <input type="file" class="hidden" accept=".txt" onchange="uploadFile(event)">
@@ -212,16 +212,22 @@
                 </div>
             </div>
 
-            <div class="flex items-center justify-between px-2 flex-none">
+            <div id="list-header" class="flex items-center justify-between px-2 flex-none hidden">
                 <div class="flex items-center gap-2">
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Danh sách chờ</span>
                     <button id="btn-toggle-list" onclick="toggleList()" class="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-[9px] font-black uppercase">Thu gọn</button>
                 </div>
-                <button onclick="clearAllAlarms()" class="text-[9px] font-black text-rose-500 uppercase hover:underline">Xóa hết</button>
+                <div class="flex items-center gap-2">
+                    <label id="plus-add-btn" class="cursor-pointer p-1.5 bg-indigo-600 text-white rounded-lg shadow-md active:scale-90 flex items-center justify-center hidden">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <input type="file" class="hidden" accept=".txt" onchange="uploadFile(event)">
+                    </label>
+                    <button onclick="clearAllAlarms()" class="text-[9px] font-black text-rose-500 uppercase hover:underline">Xóa hết</button>
+                </div>
             </div>
 
             <div id="pending-list" class="flex-1 overflow-y-auto space-y-3 custom-scroll pb-4">
-                <div class="text-center py-10 opacity-20 italic text-xs font-bold uppercase tracking-widest">Trống</div>
+                <div id="empty-hint" class="text-center py-10 opacity-20 italic text-xs font-bold uppercase tracking-widest">Trống</div>
             </div>
         </div>
 
@@ -246,13 +252,43 @@
         </div>
 
         <!-- WARNING PAGE -->
-        <div id="page-warning" class="hidden h-full flex flex-col space-y-6">
-            <div class="bg-rose-50 border-2 border-rose-100 p-8 rounded-[2.5rem] text-center shadow-inner"><div class="text-rose-600 text-3xl font-black uppercase italic tracking-tighter">Cảnh báo</div></div>
+        <div id="page-warning" class="hidden h-full flex flex-col space-y-6 overflow-y-auto custom-scroll">
+            <div class="bg-rose-50 border-2 border-rose-100 p-8 rounded-[2.5rem] text-center shadow-inner flex-none"><div class="text-rose-600 text-3xl font-black uppercase italic tracking-tighter">Cảnh báo</div></div>
+            
             <div class="space-y-4">
-                <div class="bg-white p-7 rounded-3xl border flex items-center justify-between shadow-sm">
-                    <span class="font-black text-xs uppercase text-slate-700">Đèn báo</span>
-                    <label class="switch"><input type="checkbox" onchange="send(this.checked?'cbon':'cbof')"><span class="slider"></span></label>
+                <!-- 1. CHẾ ĐỘ NGÀY ĐÊM -->
+                <div class="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block text-center">Chế độ môi trường</span>
+                    <div class="flex gap-3">
+                        <button onclick="send('ngay')" class="flex-1 bg-amber-50 text-amber-600 py-4 rounded-2xl font-black text-[11px] uppercase border-2 border-amber-100 active:scale-95 transition-all flex items-center justify-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                            Ngày
+                        </button>
+                        <button onclick="send('dem')" class="flex-1 bg-indigo-50 text-indigo-600 py-4 rounded-2xl font-black text-[11px] uppercase border-2 border-indigo-100 active:scale-95 transition-all flex items-center justify-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                            Đêm
+                        </button>
+                    </div>
                 </div>
+
+                <!-- 2. ĐÈN CẢNH BÁO -->
+                <div class="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block text-center">Đèn cảnh báo</span>
+                    <div class="flex gap-3">
+                        <button onclick="send('cbon')" class="flex-1 bg-emerald-50 text-emerald-600 py-4 rounded-2xl font-black text-[11px] uppercase border-2 border-emerald-100 active:scale-95 transition-all">Bật đèn</button>
+                        <button onclick="send('cbof')" class="flex-1 bg-slate-50 text-slate-500 py-4 rounded-2xl font-black text-[11px] uppercase border-2 border-slate-100 active:scale-95 transition-all">Tắt đèn</button>
+                    </div>
+                </div>
+
+                <!-- 3. CÒI CẢNH BÁO -->
+                <div class="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block text-center">Còi cảnh báo</span>
+                    <div class="flex gap-3">
+                        <button onclick="send('ccbn')" class="flex-1 bg-rose-50 text-rose-600 py-4 rounded-2xl font-black text-[11px] uppercase border-2 border-rose-100 active:scale-95 transition-all">Bật còi</button>
+                        <button onclick="send('ccbf')" class="flex-1 bg-slate-50 text-slate-500 py-4 rounded-2xl font-black text-[11px] uppercase border-2 border-slate-100 active:scale-95 transition-all">Tắt còi</button>
+                    </div>
+                </div>
+
                 <button onclick="emergency()" class="w-full bg-gradient-to-r from-rose-600 to-rose-500 text-white py-7 rounded-[2.2rem] font-black text-xs uppercase shadow-xl active:scale-95 transition-all">Báo động toàn diện</button>
             </div>
         </div>
@@ -262,6 +298,16 @@
             <div class="bg-indigo-600 p-6 rounded-[2rem] text-white">
                 <h3 class="font-black text-lg uppercase mb-1">Hướng dẫn</h3>
                 <p class="text-[10px] opacity-80 uppercase tracking-widest font-bold">Vận hành hệ thống</p>
+            </div>
+            <div class="space-y-3">
+                <div class="p-4 bg-white rounded-2xl border text-[11px] leading-relaxed text-slate-600">
+                    <strong class="text-slate-800 uppercase block mb-1 tracking-tighter">1. Chế độ Tự động:</strong>
+                    Sử dụng danh sách để lên lịch vận hành theo thời gian thực (RTC). Có thể nhập tay hoặc nạp file .txt.
+                </div>
+                <div class="p-4 bg-white rounded-2xl border text-[11px] leading-relaxed text-slate-600">
+                    <strong class="text-slate-800 uppercase block mb-1 tracking-tighter">2. Chế độ Thủ công:</strong>
+                    Sử dụng các phím điều hướng để di chuyển trực tiếp motor. Cần gạt về Thủ công trước khi nhấn nút.
+                </div>
             </div>
         </div>
     </main>
@@ -376,6 +422,7 @@
             document.getElementById('in-file').classList.toggle('active', m === 'file');
             document.getElementById('alarm-manual-ui').classList.toggle('hidden', m !== 'manual');
             document.getElementById('alarm-file-ui').classList.toggle('hidden', m !== 'file');
+            renderAlarms();
         }
 
         function setDir(d) {
@@ -415,10 +462,35 @@
 
         function renderAlarms() {
             const list = document.getElementById('pending-list');
+            const header = document.getElementById('list-header');
+            const dropzone = document.getElementById('file-dropzone');
+            const emptyHint = document.getElementById('empty-hint');
+            const plusBtn = document.getElementById('plus-add-btn');
+            const isFileTab = document.getElementById('in-file').classList.contains('active');
+
+            if (isFileTab) {
+                if (alarms.length > 0) {
+                    dropzone.classList.add('hidden');
+                    plusBtn.classList.remove('hidden');
+                } else {
+                    dropzone.classList.remove('hidden');
+                    plusBtn.classList.add('hidden');
+                }
+            } else {
+                plusBtn.classList.add('hidden');
+            }
+
             if (alarms.length === 0) {
-                list.innerHTML = '<div class="text-center py-10 opacity-20 italic text-xs font-bold uppercase tracking-widest">Trống</div>';
+                header.classList.add('hidden');
+                list.innerHTML = '';
+                list.appendChild(emptyHint);
+                emptyHint.classList.remove('hidden');
                 return;
             }
+
+            header.classList.remove('hidden');
+            emptyHint.classList.add('hidden');
+            
             alarms.sort((a, b) => a.time.localeCompare(b.time));
             list.innerHTML = '';
             alarms.forEach(a => {
@@ -451,12 +523,13 @@
                         const time = `${raw.substring(0,2)}:${raw.substring(2,4)}:${raw.substring(4,6)}`;
                         send(raw);
                         alarms.push({ id: (Date.now() + Math.random()).toString(), time, dir: raw.charAt(6), cmd: raw });
-                        await sleep(100);
+                        await sleep(80);
                     }
                 }
                 renderAlarms();
             };
             reader.readAsText(file);
+            e.target.value = '';
         }
 
         function updateSt(t) { document.getElementById('status-label').innerText = t.toUpperCase(); }
@@ -493,6 +566,7 @@
             const savedDark = localStorage.getItem('esp32AppDark') === 'true';
             document.getElementById('dark-mode-toggle').checked = savedDark;
             toggleAppDarkMode(savedDark);
+            renderAlarms();
         };
     </script>
 </body>
